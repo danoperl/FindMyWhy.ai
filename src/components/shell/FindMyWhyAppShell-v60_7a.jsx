@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, ArrowLeft, RotateCcw, HelpCircle, ChevronDown, ChevronUp, CheckCircle, AlertCircle, TrendingUp, RefreshCw, X, BookOpen } from 'lucide-react';
+import DeeperMeaningApp_v60_4 from "../deeperMeaning/DeeperMeaningApp-v60_4.jsx";
 
 // =============================================================================
 // PATTERN EXTRACTION ENGINE (unchanged)
@@ -1257,7 +1258,7 @@ function DeeperMeaningContent({ onSaveToLog }) {
 // =============================================================================
 
 export default function FindMyWhyAppShell() {
-  const [activeMode, setActiveMode] = useState('instant_clarity');
+  const [activeMode, setActiveMode] = useState('deeper_meaning');
   const [showLogModal, setShowLogModal] = useState(false);
   const [icLog, setIcLog] = useState([]);
   const [dmLog, setDmLog] = useState([]);
@@ -1309,7 +1310,7 @@ export default function FindMyWhyAppShell() {
           </button>
         </div>
         {activeMode === 'instant_clarity' && <InstantClarityContent onSaveToLog={handleSaveToLog} />}
-        {activeMode === 'deeper_meaning' && <DeeperMeaningContent onSaveToLog={handleSaveToLog} />}
+        {activeMode === 'deeper_meaning' && <DeeperMeaningApp_v60_4 />}
         <div className="text-center text-sm text-gray-600 mt-8 pb-4"><p>FindMyWhy.ai isn't therapy or coaching — it's your brain with super-charged<br className="hidden sm:inline" /> AI clarity, helping you make sense of your own reasoning.</p></div>
       </div>
     </div>
