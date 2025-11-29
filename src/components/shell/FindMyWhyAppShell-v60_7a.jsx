@@ -1272,25 +1272,25 @@ export default function FindMyWhyAppShell() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.25s ease-out forwards;
-        }
-      `}</style>
-      
-      <LogHistoryModal 
-        isOpen={showLogModal} 
-        onClose={() => setShowLogModal(false)} 
-        icLog={icLog} 
-        dmLog={dmLog} 
-      />
-      
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
+        <style>{`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.25s ease-out forwards;
+          }
+        `}</style>
+
+        <LogHistoryModal
+          isOpen={showLogModal}
+          onClose={() => setShowLogModal(false)}
+          icLog={icLog}
+          dmLog={dmLog}
+        />
+
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">FindMyWhy.ai</h1>
@@ -1299,7 +1299,7 @@ export default function FindMyWhyAppShell() {
               <button onClick={() => setActiveMode('deeper_meaning')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${activeMode === 'deeper_meaning' ? 'bg-indigo-600 text-white shadow-sm' : 'border border-indigo-300 text-indigo-600 bg-white hover:bg-indigo-50'}`}>Deeper Meaning</button>
             </div>
           </div>
-          <button 
+          <button
             onClick={() => setShowLogModal(true)}
             className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
           >
@@ -1312,7 +1312,7 @@ export default function FindMyWhyAppShell() {
         {activeMode === 'instant_clarity' && <InstantClarityContent onSaveToLog={handleSaveToLog} />}
         {activeMode === 'deeper_meaning' && <DeeperMeaningApp_v60_4 />}
         <div className="text-center text-sm text-gray-600 mt-8 pb-4"><p>FindMyWhy.ai isn't therapy or coaching — it's your brain with super-charged<br className="hidden sm:inline" /> AI clarity, helping you make sense of your own reasoning.</p></div>
-      </div>
+      </main>
     </div>
   );
 }

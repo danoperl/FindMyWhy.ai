@@ -5,39 +5,37 @@ import DM6Closure_v60_6b from "./DM6Closure-v60_6b.jsx";
 
 export default function DeeperMeaningApp_v60_4() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 px-4 py-8">
-      <div className="mx-auto max-w-3xl space-y-6">
-        {/* Header */}
-        <header className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Deeper Meaning Mode
-          </h1>
-          <p className="text-sm text-slate-300">
-            A structured, recursive flow to unpack the deeper “why” behind your decision,
-            pattern, or nagging question.
-          </p>
-        </header>
+    <div className="space-y-8">
+      {/* Header */}
+      <header className="space-y-2">
+        <h2 className="text-xl font-semibold tracking-tight">
+          Deeper Meaning Mode
+        </h2>
+        <p className="text-sm text-slate-300">
+          A structured, recursive flow to unpack the deeper "why" behind your decision,
+          pattern, or nagging question.
+        </p>
+      </header>
 
-        {/* DM3 – Why Chain */}
-        <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-          <DM3WhyChain_v60_5c />
-        </section>
+      {/* DM3 – Why Chain */}
+      <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-md shadow-slate-900/50 space-y-4">
+        <DM3WhyChain_v60_5c />
+      </section>
 
-        {/* DM4 – Pattern Recognition */}
-        <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-          <DM4PatternRecognition_v60_6a />
-        </section>
+      {/* DM4 – Pattern Recognition */}
+      <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-md shadow-slate-900/50 space-y-4">
+        <DM4PatternRecognition_v60_6a />
+      </section>
 
-        {/* DM5 – Insight */}
-        <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-          <DM5Insight_v60_6b />
-        </section>
+      {/* DM5 – Insight */}
+      <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-md shadow-slate-900/50 space-y-4">
+        <DM5Insight_v60_6b />
+      </section>
 
-        {/* DM6 – Closure */}
-        <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-          <DM6Closure_v60_6b />
-        </section>
-      </div>
+      {/* DM6 – Closure */}
+      <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-md shadow-slate-900/50 space-y-4">
+        <DM6Closure_v60_6b />
+      </section>
     </div>
   );
 }
