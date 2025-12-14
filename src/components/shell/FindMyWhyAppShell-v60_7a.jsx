@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, ArrowLeft, RotateCcw, HelpCircle, ChevronDown, ChevronUp, CheckCircle, AlertCircle, TrendingUp, RefreshCw, X, BookOpen } from 'lucide-react';
 import DeeperMeaningApp_v60_4 from "../deeperMeaning/DeeperMeaningApp-v60_4.jsx";
+import HomeScreen from "../home/HomeScreen.jsx";
 
 // =============================================================================
 // PATTERN EXTRACTION ENGINE (unchanged)
@@ -1262,6 +1263,7 @@ export default function FindMyWhyAppShell() {
   const [showLogModal, setShowLogModal] = useState(false);
   const [icLog, setIcLog] = useState([]);
   const [dmLog, setDmLog] = useState([]);
+  const [hasEntered, setHasEntered] = useState(false);
 
   const handleSaveToLog = (entry, type) => {
     if (type === 'ic') {
@@ -1270,6 +1272,23 @@ export default function FindMyWhyAppShell() {
       setDmLog(prev => [entry, ...prev]);
     }
   };
+
+  const handleEnterIC = () => {
+    // Entry Hatch direct mode entry (can be collapsed back to mode selector later)
+    setHasEntered(true);
+    setActiveMode('instant_clarity');
+  };
+
+  const handleEnterDM = () => {
+    // Entry Hatch direct mode entry (can be collapsed back to mode selector later)
+    setHasEntered(true);
+    setActiveMode('deeper_meaning');
+  };
+
+  if (!hasEntered) {
+    // Entry Hatch direct mode entry (can be collapsed back to mode selector later)
+    return <HomeScreen onEnterIC={handleEnterIC} onEnterDM={handleEnterDM} onQuickClarity={handleEnterIC} onDeeperMeaning={handleEnterDM} />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
