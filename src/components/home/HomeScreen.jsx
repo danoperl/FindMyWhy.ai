@@ -17,9 +17,16 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 flex flex-col items-center justify-center">
       <div className="max-w-md w-full space-y-6">
-        {/* Logo */}
-        <div className="flex justify-center">
+        {/* Logo + Header */}
+        <div className="flex flex-col items-center space-y-3">
           <img src={fmyLogo} alt="FindMyWhy logo" className="h-16 w-auto" />
+          <h1 className="text-2xl font-bold text-slate-900">FindMyWhy</h1>
+        </div>
+
+        {/* What’s on your mind? Panel */}
+        <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 shadow-lg p-8 text-center">
+          <div className="text-4xl mb-3">🤔</div>
+          <p className="text-lg font-medium text-slate-800">What’s on your mind?</p>
         </div>
 
         {/* Card */}
@@ -54,7 +61,7 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
 
           {/* Trust Line */}
           <p className="text-xs text-slate-500">
-          Your responses aren’t shared, and you can leave the session at any time.
+            Your responses aren’t shared, and you can leave the session at any time.
           </p>
 
           {/* Divider */}
