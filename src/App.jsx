@@ -1,8 +1,6 @@
 import React from "react";
-import FindMyWhyAppShell from "./components/shell/FindMyWhyAppShell-v60_7a.jsx";
+import FindMyWhyApp from "./components/shell/FindMyWhy-v61_0-SliceB.jsx";
 
-function App() {
-  return <FindMyWhyAppShell />;
+export default function App() {
+  return <FindMyWhyApp />;
 }
-
-export default App;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import fmyLogo from '../../assets/fmy-logo.svg';
+import fmyLogo from '../../assets/fmy-logo-v2.svg';
 
 export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDeeperMeaning }) {
   const [name, setName] = useState('');
@@ -25,8 +25,7 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
 
         {/* What’s on your mind? Panel */}
         <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 shadow-lg p-8 text-center">
-          <div className="text-4xl mb-3">🤔</div>
-          <p className="text-lg font-medium text-slate-800">What’s on your mind?</p>
+          <p className="text-2xl font-medium text-slate-800">What’s on your mind? <span className="text-4xl">🤔</span></p>
         </div>
 
         {/* Card */}
@@ -34,10 +33,10 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
           
           {/* Mission Brief */}
           <div>
-            <p className="text-sm text-slate-700 leading-relaxed">
+            <p className="text-lg font-bold text-slate-700 leading-relaxed">
               FindMyWhy is a thinking tool.
             </p>
-            <p className="text-sm text-slate-700 leading-relaxed mt-2">
+            <p className="text-base text-slate-700 leading-relaxed mt-2">
               It helps you work through one specific question by asking a small number of high-leverage prompts — then it ends.
             </p>
           </div>
