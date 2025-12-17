@@ -882,13 +882,10 @@ export default function FindMyWhyApp() {
                 </div>
               )}
               
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-3 pt-2">
                 <button onClick={() => setCurrentStep(3)} className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg">
                   Refine WHYs
                 </button>
-              </div>
-              
-              <div className="flex justify-center pt-2">
                 <button onClick={handleDM4Continue} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center gap-2">
                   Continue <ArrowRight size={18} />
                 </button>
