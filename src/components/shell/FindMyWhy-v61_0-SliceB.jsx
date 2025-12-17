@@ -854,16 +854,16 @@ export default function FindMyWhyApp() {
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-900 min-h-[80px] resize-y"
                     maxLength={300}
                   />
-                  <div className="flex flex-wrap gap-3">
-                    <button onClick={handleAddWhy} disabled={!whyInput.trim()} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-semibold rounded-lg">
-                      Add this step
-                    </button>
-                  </div>
                 </div>
               )}
               
-              {whyChain.length > 0 && (
-                <div className="flex justify-center pt-2">
+              <div className="flex flex-col sm:flex-row sm:justify-center gap-3 pt-2">
+                {whyChain.length < MAX_DEPTH && (
+                  <button onClick={handleAddWhy} disabled={!whyInput.trim()} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-semibold rounded-lg">
+                    Add this step
+                  </button>
+                )}
+                {whyChain.length > 0 && (
                   <button 
                     onClick={handleWhyComplete} 
                     disabled={editingIndex !== null}
@@ -875,8 +875,8 @@ export default function FindMyWhyApp() {
                   >
                     I'm done
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </FmyCard>
         </div>
