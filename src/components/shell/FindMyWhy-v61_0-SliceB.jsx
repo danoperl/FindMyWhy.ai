@@ -275,6 +275,10 @@ export default function FindMyWhyApp() {
   const [insight, setInsight] = useState('');
   const [showInfo, setShowInfo] = useState(false);
   
+  // DM3 editing state
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editingText, setEditingText] = useState('');
+  
   // IC state
   const [icStage, setIcStage] = useState('input');
   const [icDecision, setIcDecision] = useState('');
@@ -343,6 +347,26 @@ export default function FindMyWhyApp() {
     setPatterns(p);
     setInsight(generateInsight(p));
     setCurrentStep(4);
+  };
+
+  const startEditWhy = (index) => {
+    setEditingIndex(index);
+    setEditingText(whyChain[index]?.whyText ?? '');
+  };
+
+  const cancelEditWhy = () => {
+    setEditingIndex(null);
+    setEditingText('');
+  };
+
+  const saveEditWhy = () => {
+    if (editingIndex === null) return;
+    const nextText = editingText.trim();
+    setWhyChain(prev => prev.map((w, i) => 
+      i === editingIndex ? { ...w, whyText: nextText } : w
+    ));
+    setEditingIndex(null);
+    setEditingText('');
   };
 
   const handleDM4Continue = () => setCurrentStep(5);
@@ -793,7 +817,31 @@ export default function FindMyWhyApp() {
                   {whyChain.map((why, i) => (
                     <div key={why.id} className="flex gap-3 items-start animate-fadeIn">
                       <span className="w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
-                      <p className="text-sm text-slate-700">{why.whyText}</p>
+                      {editingIndex === i ? (
+                        <div className="flex-1 space-y-2">
+                          <textarea
+                            value={editingText}
+                            onChange={(e) => setEditingText(e.target.value.slice(0, 300))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-900 text-sm min-h-[60px] resize-y"
+                            maxLength={300}
+                          />
+                          <div className="flex gap-2">
+                            <button onClick={saveEditWhy} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg">
+                              Save
+                            </button>
+                            <button onClick={cancelEditWhy} className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium rounded-lg">
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex items-start justify-between gap-3">
+                          <p className="text-sm text-slate-700">{why.whyText}</p>
+                          <button onClick={() => startEditWhy(i)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded flex-shrink-0">
+                            Edit
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
