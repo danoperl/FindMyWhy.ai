@@ -760,10 +760,7 @@ export default function FindMyWhyApp() {
                 </div>
               </div>
               
-              <div className="flex justify-center gap-3 pt-2">
-                <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-lg border border-slate-300 flex items-center gap-2">
-                  <ArrowLeft size={16} /> Back
-                </button>
+              <div className="flex justify-center pt-2">
                 <button onClick={handleDM2Continue} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center gap-2">
                   Continue <ArrowRight size={18} />
                 </button>
@@ -861,20 +858,25 @@ export default function FindMyWhyApp() {
                     <button onClick={handleAddWhy} disabled={!whyInput.trim()} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-semibold rounded-lg">
                       Add this step
                     </button>
-                    {whyChain.length > 0 && (
-                      <button onClick={handleWhyComplete} className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg">
-                        I'm done
-                      </button>
-                    )}
                   </div>
                 </div>
               )}
               
-              <div className="flex justify-center gap-3 pt-2">
-                <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-lg border border-slate-300 flex items-center gap-2">
-                  <ArrowLeft size={16} /> Back
-                </button>
-              </div>
+              {whyChain.length > 0 && (
+                <div className="flex justify-center pt-2">
+                  <button 
+                    onClick={handleWhyComplete} 
+                    disabled={editingIndex !== null}
+                    className={`px-5 py-2.5 font-medium rounded-lg ${
+                      editingIndex !== null 
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
+                        : 'bg-slate-600 hover:bg-slate-700 text-white'
+                    }`}
+                  >
+                    I'm done
+                  </button>
+                </div>
+              )}
             </div>
           </FmyCard>
         </div>
