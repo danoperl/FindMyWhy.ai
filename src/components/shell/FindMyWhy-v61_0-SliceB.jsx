@@ -6,7 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, RotateCcw, HelpCircle, CheckCircle, AlertCircle, Clipboard, Check, BookOpen } from 'lucide-react';
 import HomeScreen from "../home/HomeScreen.jsx";
-import BackToHomePill from "../ui/BackToHomePill.jsx";
+import { BackToHomePill } from "../ui";
 
 // =============================================================================
 // FLOW CONFIG (Slice A)
