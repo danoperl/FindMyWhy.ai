@@ -6,6 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, RotateCcw, HelpCircle, CheckCircle, AlertCircle, Clipboard, Check, BookOpen } from 'lucide-react';
 import HomeScreen from "../home/HomeScreen.jsx";
+import BackToHomePill from "../ui/BackToHomePill.jsx";
 
 // =============================================================================
 // FLOW CONFIG (Slice A)
@@ -642,12 +643,7 @@ export default function FindMyWhyApp() {
             .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
           `}</style>
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
-            <button
-              onClick={() => setScreen("HOME")}
-              className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
-            >
-              Back to Home
-            </button>
+            <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
             <FmyCard>
               <div className="mb-6">
                 <button onClick={() => setIcShowTooltip(!icShowTooltip)} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold text-sm transition-colors">
@@ -691,12 +687,7 @@ export default function FindMyWhyApp() {
             .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
           `}</style>
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
-            <button
-              onClick={() => setScreen("HOME")}
-              className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
-            >
-              Back to Home
-            </button>
+            <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
             <FmyCard>
               <div className="mb-6">
                 <div className="flex items-center gap-3 text-sm text-slate-600">
@@ -733,12 +724,7 @@ export default function FindMyWhyApp() {
             .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
           `}</style>
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
-            <button
-              onClick={() => setScreen("HOME")}
-              className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
-            >
-              Back to Home
-            </button>
+            <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
             <FmyCard className="space-y-6">
               <h2 className={fmyTheme.typography.heading}>💡 Here's what we learned</h2>
               <div className="bg-white border-2 border-indigo-200 rounded-xl p-5">
@@ -795,12 +781,7 @@ export default function FindMyWhyApp() {
           .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
         `}</style>
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
-          <button
-            onClick={() => setScreen("HOME")}
-            className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
-          >
-            Back to Home
-          </button>
+          <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
           <div className="text-center mb-4">
             <h1 className="text-3xl font-bold text-slate-900">FindMyWhy.ai</h1>
             <p className="text-sm text-slate-500 mt-1">v61.0 Slice B</p>
@@ -1230,12 +1211,7 @@ export default function FindMyWhyApp() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
-          <button
-            onClick={() => setScreen("HOME")}
-            className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
-          >
-            Back to Home
-          </button>
+          <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
           <FmyCard>
             <PipelineStrip currentStep={currentStep} />
             <FmyCardDivider />
