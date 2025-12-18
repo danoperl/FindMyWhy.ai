@@ -509,7 +509,15 @@ export default function FindMyWhyApp() {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
+        const errorMsg = errorData.error || `HTTP ${response.status}`;
+        console.error('DM5 fail-soft:', `Status ${response.status}: ${errorMsg}`);
+        const fallback = "DM5 insight unavailable right now (API Unavailable).\n\n" +
+          "You can still review your WHY Chain + Pattern Results.\n\n" +
+          "Try again later after API access is re-enabled.";
+        setDm5OutputText(fallback);
+        setDm5Status('idle');
+        setCurrentStep(5);
+        return;
       }
       
       const data = await response.json();
@@ -532,7 +540,14 @@ export default function FindMyWhyApp() {
       }
       
       if (!candidate) {
-        throw new Error('DM5 response missing output text (expected dm5OutputText/output_text/text/outputText/dm5)');
+        console.error('DM5 fail-soft:', 'Response missing output text (expected dm5OutputText/output_text/text/outputText/dm5)');
+        const fallback = "DM5 insight unavailable right now (API Unavailable).\n\n" +
+          "You can still review your WHY Chain + Pattern Results.\n\n" +
+          "Try again later after API access is re-enabled.";
+        setDm5OutputText(fallback);
+        setDm5Status('idle');
+        setCurrentStep(5);
+        return;
       }
       
       // On success
@@ -540,10 +555,16 @@ export default function FindMyWhyApp() {
       setDm5Status('idle');
       setCurrentStep(5);
     } catch (error) {
-      // On error
-      setDm5Status('error');
-      setDm5Error(error.message || 'Failed to generate insight. Please try again.');
-      // Do NOT advance step
+      // Fail-soft: network errors, JSON parse errors, etc.
+      const errorMsg = error.message || 'Unknown error';
+      const statusCode = error.status || (error.response?.status) || 'network';
+      console.error('DM5 fail-soft:', `${statusCode}: ${errorMsg}`);
+      const fallback = "DM5 insight unavailable right now (API Unavailable).\n\n" +
+        "You can still review your WHY Chain + Pattern Results.\n\n" +
+        "Try again later after API access is re-enabled.";
+      setDm5OutputText(fallback);
+      setDm5Status('idle');
+      setCurrentStep(5);
     }
   };
   const handleDM5Continue = () => setCurrentStep(6);
