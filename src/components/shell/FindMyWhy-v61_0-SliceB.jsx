@@ -644,7 +644,7 @@ export default function FindMyWhyApp() {
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
             <button
               onClick={() => setScreen("HOME")}
-              className="absolute top-0 right-0 text-xs text-slate-500 hover:text-slate-700 font-medium"
+              className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
             >
               Back to Home
             </button>
@@ -693,7 +693,7 @@ export default function FindMyWhyApp() {
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
             <button
               onClick={() => setScreen("HOME")}
-              className="absolute top-0 right-0 text-xs text-slate-500 hover:text-slate-700 font-medium"
+              className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
             >
               Back to Home
             </button>
@@ -735,7 +735,7 @@ export default function FindMyWhyApp() {
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
             <button
               onClick={() => setScreen("HOME")}
-              className="absolute top-0 right-0 text-xs text-slate-500 hover:text-slate-700 font-medium"
+              className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
             >
               Back to Home
             </button>
@@ -797,7 +797,7 @@ export default function FindMyWhyApp() {
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
           <button
             onClick={() => setScreen("HOME")}
-            className="absolute top-0 right-0 z-50 text-xs text-slate-500 hover:text-slate-700 font-medium"
+            className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
           >
             Back to Home
           </button>
@@ -1232,7 +1232,7 @@ export default function FindMyWhyApp() {
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
           <button
             onClick={() => setScreen("HOME")}
-            className="absolute top-0 right-0 z-50 text-xs text-slate-500 hover:text-slate-700 font-medium"
+            className="absolute top-4 right-4 z-50 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer"
           >
             Back to Home
           </button>
