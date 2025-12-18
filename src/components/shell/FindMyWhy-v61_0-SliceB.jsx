@@ -248,10 +248,24 @@ function formatArtifactForClipboard(artifact, dm5OutputText) {
     lines.push('');
   }
   
-  // Append DM5 output verbatim
-  if (dm5OutputText) {
+  // Robust insight text selection: prefer dm5OutputText, fallback to artifact insights
+  let insightText = null;
+  if (dm5OutputText && typeof dm5OutputText === 'string' && dm5OutputText.trim().length > 0) {
+    insightText = dm5OutputText.trim();
+  } else if (artifact.insights && Array.isArray(artifact.insights) && artifact.insights.length > 0) {
+    // Find first non-empty insight text
+    for (const insight of artifact.insights) {
+      if (insight && insight.text && typeof insight.text === 'string' && insight.text.trim().length > 0) {
+        insightText = insight.text.trim();
+        break;
+      }
+    }
+  }
+  
+  // Append Insight section when insight text exists
+  if (insightText) {
     lines.push('Insight:', '');
-    lines.push(dm5OutputText);
+    lines.push(insightText);
     lines.push('');
   }
   
@@ -762,7 +776,7 @@ export default function FindMyWhyApp() {
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
           <button
             onClick={() => setScreen("HOME")}
-            className="absolute top-0 right-0 text-xs text-slate-500 hover:text-slate-700 font-medium"
+            className="absolute top-0 right-0 z-50 text-xs text-slate-500 hover:text-slate-700 font-medium"
           >
             Back to Home
           </button>
@@ -1197,7 +1211,7 @@ export default function FindMyWhyApp() {
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
           <button
             onClick={() => setScreen("HOME")}
-            className="absolute top-0 right-0 text-xs text-slate-500 hover:text-slate-700 font-medium"
+            className="absolute top-0 right-0 z-50 text-xs text-slate-500 hover:text-slate-700 font-medium"
           >
             Back to Home
           </button>
