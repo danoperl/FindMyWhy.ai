@@ -144,6 +144,84 @@ function generateInsight(patterns) {
 }
 
 // =============================================================================
+// DM4 → DM5 PAYLOAD GENERATION
+// =============================================================================
+
+function buildDM4Payload(whyChain, patterns, surfaceQuestion, selectedDomain) {
+  // Extract evidence from whyChain for each pattern
+  const whyTexts = whyChain.map(w => w.whyText);
+  const whyTextLower = whyTexts.join(' ').toLowerCase();
+  
+  // Build pattern data with evidence
+  const patternData = patterns.map(p => {
+    const evidence = [];
+    const patternWords = PATTERN_KEYWORDS[p.id]?.words || [];
+    whyTexts.forEach((text, idx) => {
+      const textLower = text.toLowerCase();
+      if (patternWords.some(word => textLower.includes(word))) {
+        evidence.push({ step: idx + 1, text: text });
+      }
+    });
+    
+    return {
+      id: p.id,
+      label: p.label,
+      category: p.category,
+      strength: p.strength,
+      evidence: evidence.slice(0, 3) // Limit evidence
+    };
+  });
+  
+  // Identify tensions (simplified: look for contrasting patterns)
+  const tensions = [];
+  if (patterns.length >= 2) {
+    const highStrength = patterns.filter(p => p.strength === 'high');
+    if (highStrength.length >= 2) {
+      tensions.push({
+        between: [highStrength[0].id, highStrength[1].id],
+        description: `Tension between ${highStrength[0].label.toLowerCase()} and ${highStrength[1].label.toLowerCase()}`
+      });
+    }
+  }
+  
+  // Directional signals (simplified: based on pattern categories)
+  const directionalSignals = [];
+  if (patterns.some(p => p.category === 'values')) {
+    directionalSignals.push('values-oriented');
+  }
+  if (patterns.some(p => p.category === 'identity')) {
+    directionalSignals.push('identity-related');
+  }
+  if (patterns.some(p => p.category === 'emotion')) {
+    directionalSignals.push('emotionally-charged');
+  }
+  
+  // Fog indicators (simplified: based on pattern strength distribution)
+  const fogIndicators = [];
+  const lowStrengthCount = patterns.filter(p => p.strength === 'low').length;
+  if (lowStrengthCount > patterns.length / 2) {
+    fogIndicators.push('multiple-low-strength-patterns');
+  }
+  if (patterns.length === 0) {
+    fogIndicators.push('no-patterns-detected');
+  }
+  
+  const payload = {
+    surfaceQuestion: surfaceQuestion || null,
+    domain: selectedDomain || null,
+    whyChain: whyTexts,
+    themes: patternData.map(p => ({ id: p.id, label: p.label, category: p.category })),
+    evidence: patternData.flatMap(p => p.evidence.map(e => ({ patternId: p.id, ...e }))),
+    tensions: tensions,
+    directionalSignals: directionalSignals,
+    fogIndicators: fogIndicators,
+    patternStrengths: patternData.map(p => ({ id: p.id, strength: p.strength }))
+  };
+  
+  return JSON.stringify(payload);
+}
+
+// =============================================================================
 // CLARITY ARTIFACT (Slice B)
 // =============================================================================
 
@@ -157,7 +235,7 @@ function deriveClarityArtifact(whyChain, patterns, insights, surfaceQuestion) {
   };
 }
 
-function formatArtifactForClipboard(artifact) {
+function formatArtifactForClipboard(artifact, dm5OutputText) {
   const lines = ['Clarity Snapshot — FindMyWhy.ai', `Generated: ${new Date(artifact.createdAt).toLocaleDateString()}`, ''];
   
   if (artifact.surfaceQuestion) {
@@ -170,19 +248,29 @@ function formatArtifactForClipboard(artifact) {
     lines.push('');
   }
   
-  if (artifact.patterns.length > 0) {
+  // Append DM5 output verbatim
+  if (dm5OutputText) {
+    lines.push('Insight:', '');
+    lines.push(dm5OutputText);
+    lines.push('');
+  }
+  
+  // Remove DM4 "Patterns (low)" lists from final output
+  // Only include high/medium strength patterns
+  const significantPatterns = artifact.patterns.filter(p => p.strength !== 'low');
+  if (significantPatterns.length > 0) {
     lines.push('Patterns:');
-    artifact.patterns.forEach(p => lines.push(`• ${p.label} (${p.strength})`));
+    significantPatterns.forEach(p => lines.push(`• ${p.label} (${p.strength})`));
   }
   
   return lines.join('\n');
 }
 
-function ClarityArtifactPanel({ artifact }) {
+function ClarityArtifactPanel({ artifact, dm5OutputText }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    const text = formatArtifactForClipboard(artifact);
+    const text = formatArtifactForClipboard(artifact, dm5OutputText);
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -275,6 +363,12 @@ export default function FindMyWhyApp() {
   const [insight, setInsight] = useState('');
   const [showInfo, setShowInfo] = useState(false);
   
+  // DM5 runtime state
+  const [dm4PayloadJson, setDm4PayloadJson] = useState('');
+  const [dm5OutputText, setDm5OutputText] = useState('');
+  const [dm5Status, setDm5Status] = useState('idle'); // 'idle' | 'loading' | 'error'
+  const [dm5Error, setDm5Error] = useState('');
+  
   // DM3 editing state
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingText, setEditingText] = useState('');
@@ -299,6 +393,10 @@ export default function FindMyWhyApp() {
     setWhyInput("");
     setPatterns([]);
     setInsight("");
+    setDm4PayloadJson("");
+    setDm5OutputText("");
+    setDm5Status('idle');
+    setDm5Error("");
   };
 
   useEffect(() => {
@@ -318,6 +416,10 @@ export default function FindMyWhyApp() {
     setWhyInput('');
     setPatterns([]);
     setInsight('');
+    setDm4PayloadJson('');
+    setDm5OutputText('');
+    setDm5Status('idle');
+    setDm5Error('');
   };
 
   const handleBegin = () => {
@@ -369,7 +471,67 @@ export default function FindMyWhyApp() {
     setEditingText('');
   };
 
-  const handleDM4Continue = () => setCurrentStep(5);
+  const handleDM4Continue = async () => {
+    // Set loading state
+    setDm5Status('loading');
+    setDm5Error('');
+    
+    try {
+      // Build or use existing DM4 payload
+      let payloadJson = dm4PayloadJson;
+      if (!payloadJson) {
+        payloadJson = buildDM4Payload(whyChain, patterns, surfaceQuestion, selectedDomain);
+        setDm4PayloadJson(payloadJson);
+      }
+      
+      // POST to /api/dm5
+      const response = await fetch('/api/dm5', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ dm4PayloadJson: payloadJson }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Robust field selection: prefer dm5OutputText, fallback to common alternatives
+      const candidates = [
+        data.dm5OutputText,
+        data.output_text,
+        data.text,
+        data.outputText,
+        (typeof data.dm5 === 'string' ? data.dm5 : null)
+      ];
+      
+      let candidate = null;
+      for (const c of candidates) {
+        if (c && typeof c === 'string' && c.trim().length > 0) {
+          candidate = c.trim();
+          break;
+        }
+      }
+      
+      if (!candidate) {
+        throw new Error('DM5 response missing output text (expected dm5OutputText/output_text/text/outputText/dm5)');
+      }
+      
+      // On success
+      setDm5OutputText(candidate);
+      setDm5Status('idle');
+      setCurrentStep(5);
+    } catch (error) {
+      // On error
+      setDm5Status('error');
+      setDm5Error(error.message || 'Failed to generate insight. Please try again.');
+      // Do NOT advance step
+    }
+  };
   const handleDM5Continue = () => setCurrentStep(6);
 
   // IC handlers
@@ -965,16 +1127,54 @@ export default function FindMyWhyApp() {
                 <p className={fmyTheme.typography.caption}>A neutral look at the themes.</p>
               </div>
               
-              <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-xl p-6">
-                <p className={`${fmyTheme.typography.label} text-indigo-600 mb-3`}>Based on what you shared</p>
-                <p className="text-lg text-slate-900 leading-relaxed font-medium">{insight}</p>
-              </div>
+              {dm5Status === 'loading' && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
+                  <p className="text-slate-600">Generating...</p>
+                </div>
+              )}
+              
+              {dm5Status === 'error' && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-6 space-y-3">
+                  <div className="flex items-center gap-2 text-red-800">
+                    <AlertCircle size={18} />
+                    <p className="font-semibold">Error</p>
+                  </div>
+                  <p className="text-sm text-red-700">{dm5Error}</p>
+                  <button 
+                    onClick={handleDM4Continue}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg text-sm"
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
+              
+              {dm5Status === 'idle' && dm5OutputText && (
+                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-xl p-6">
+                  <p className={`${fmyTheme.typography.label} text-indigo-600 mb-3`}>Based on what you shared</p>
+                  <div className="text-lg text-slate-900 leading-relaxed font-medium whitespace-pre-wrap">{dm5OutputText}</div>
+                </div>
+              )}
+              
+              {dm5Status === 'idle' && !dm5OutputText && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
+                  <p className="text-slate-600">No insight generated yet.</p>
+                </div>
+              )}
               
               <div className="flex justify-center gap-3 pt-2">
                 <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-lg border border-slate-300 flex items-center gap-2">
                   <ArrowLeft size={16} /> Back
                 </button>
-                <button onClick={handleDM5Continue} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center gap-2">
+                <button 
+                  onClick={handleDM5Continue} 
+                  disabled={dm5Status === 'loading' || !dm5OutputText}
+                  className={`px-6 py-3 font-semibold rounded-lg flex items-center gap-2 transition-colors ${
+                    dm5Status === 'loading' || !dm5OutputText
+                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  }`}
+                >
                   Continue <ArrowRight size={18} />
                 </button>
               </div>
@@ -1027,6 +1227,14 @@ export default function FindMyWhyApp() {
                 </ul>
               </div>
               
+              {/* DM5 Output (verbatim) */}
+              {dm5OutputText && (
+                <div className="bg-white border-2 border-slate-200 rounded-xl p-6">
+                  <p className={`${fmyTheme.typography.label} mb-3`}>Insight</p>
+                  <div className="text-base text-slate-800 leading-relaxed whitespace-pre-wrap">{dm5OutputText}</div>
+                </div>
+              )}
+              
               {/* Closure Recommendation */}
               <div className="bg-white border-2 border-slate-200 rounded-xl p-6">
                 <p className={`${fmyTheme.typography.label} mb-3`}>Something you might hold lightly:</p>
@@ -1038,7 +1246,7 @@ export default function FindMyWhyApp() {
               </div>
               
               {/* SLICE B: Clarity Artifact Panel */}
-              <ClarityArtifactPanel artifact={clarityArtifact} />
+              <ClarityArtifactPanel artifact={clarityArtifact} dm5OutputText={dm5OutputText} />
             </div>
           </FmyCard>
           
@@ -1050,7 +1258,7 @@ export default function FindMyWhyApp() {
           </div>
           
           <p className="text-center text-xs text-slate-500">
-            FindMyWhy.ai · v61.0 Slice B · Exit-support, not engagement
+            FindMyWhy.ai · v62.0 · Exit-support, not engagement
           </p>
         </div>
       </div>
