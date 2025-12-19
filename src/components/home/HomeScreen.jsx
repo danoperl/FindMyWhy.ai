@@ -15,8 +15,8 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 flex flex-col items-center justify-center">
-      <div className="max-w-md w-full space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 flex flex-col items-center justify-between">
+      <div className="max-w-md w-full space-y-6 flex-1 flex flex-col justify-center">
         {/* Logo + Header */}
         <div className="flex flex-col items-center space-y-3">
           <img src={fmyLogo} alt="FindMyWhy logo" className="h-16 w-auto" />
@@ -123,6 +123,14 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div className="max-w-md w-full px-4 pb-4">
+        <p className="text-xs text-slate-500 text-center">
+          "<span className="font-semibold">FindMyWhy</span> isn't Therapy or Coaching — it's your brain with super-charged<br />
+          AI Clarity, helping you make sense of your own thoughts."
+        </p>
       </div>
     </div>
   );
