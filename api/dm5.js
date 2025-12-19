@@ -17,8 +17,12 @@ import { DM5_V1_SYSTEM_PROMPT } from './prompts/dm5_v1_system_prompt.js';
  */
 
 export default async function handler(req, res) {
+  // [INSTRUMENTATION] Log handler entry
+  console.log(`[DM5] HIT ${new Date().toISOString()}`);
+
   // Only allow POST
   if (req.method !== 'POST') {
+    console.log('[DM5] FALLBACK PATH USED');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -27,6 +31,7 @@ export default async function handler(req, res) {
     const { dm4PayloadJson } = req.body;
     
     if (!dm4PayloadJson) {
+      console.log('[DM5] FALLBACK PATH USED');
       return res.status(400).json({ error: 'Missing dm4PayloadJson' });
     }
 
@@ -39,6 +44,7 @@ export default async function handler(req, res) {
       try {
         dm4Payload = JSON.parse(dm4PayloadJson);
       } catch (parseError) {
+        console.log('[DM5] FALLBACK PATH USED');
         return res.status(400).json({ error: 'Invalid JSON in dm4PayloadJson' });
       }
     } else if (typeof dm4PayloadJson === 'object') {
@@ -46,26 +52,31 @@ export default async function handler(req, res) {
         payloadString = JSON.stringify(dm4PayloadJson);
         dm4Payload = dm4PayloadJson;
       } catch (stringifyError) {
+        console.log('[DM5] FALLBACK PATH USED');
         return res.status(400).json({ error: 'Failed to stringify dm4PayloadJson' });
       }
     } else {
+      console.log('[DM5] FALLBACK PATH USED');
       return res.status(400).json({ error: 'dm4PayloadJson must be a string or object' });
     }
 
     // Validate payload is not empty
     if (!payloadString || payloadString.trim().length === 0) {
+      console.log('[DM5] FALLBACK PATH USED');
       return res.status(400).json({ error: 'dm4PayloadJson is empty' });
     }
 
     // Check for OpenAI API key
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
+      console.log('[DM5] FALLBACK PATH USED');
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
     // Validate SYSTEM_PROMPT is present and substantial
     const SYSTEM_PROMPT = DM5_V1_SYSTEM_PROMPT.trim();
     if (!SYSTEM_PROMPT || SYSTEM_PROMPT.length < 2000) {
+      console.log('[DM5] FALLBACK PATH USED');
       return res.status(500).json({ error: 'SYSTEM_PROMPT missing or invalid' });
     }
 
@@ -97,6 +108,9 @@ ${dm4Payload.fogIndicators?.join(', ') || 'None'}
 
 Generate clarity-producing insight based on this analysis.`;
 
+    // [INSTRUMENTATION] Log before OpenAI API call
+    console.log('[DM5] CALLING OPENAI');
+
     // Call OpenAI API
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -122,6 +136,7 @@ Generate clarity-producing insight based on this analysis.`;
     });
 
     if (!openaiResponse.ok) {
+      console.log('[DM5] FALLBACK PATH USED');
       const errorData = await openaiResponse.json().catch(() => ({}));
       return res.status(500).json({ 
         error: 'Failed to generate insight',
@@ -129,18 +144,30 @@ Generate clarity-producing insight based on this analysis.`;
       });
     }
 
+    // [INSTRUMENTATION] Log successful OpenAI response
+    console.log('[DM5] OPENAI OK');
+
     const openaiData = await openaiResponse.json();
     const dm5OutputText = openaiData.choices?.[0]?.message?.content?.trim() || '';
 
     // Fail closed: empty or whitespace-only response
     if (!dm5OutputText || dm5OutputText.length === 0) {
+      console.log('[DM5] FALLBACK PATH USED');
       return res.status(502).json({ error: 'Empty response from OpenAI' });
     }
 
-    // Return DM5 output
-    return res.status(200).json({ dm5OutputText });
+    // [INSTRUMENTATION] Add metadata to response indicating OpenAI was used
+    // Return DM5 output with instrumentation metadata
+    return res.status(200).json({ 
+      dm5OutputText,
+      dm5Meta: {
+        source: 'openai',
+        model: OPENAI_MODEL
+      }
+    });
 
   } catch (error) {
+    console.log('[DM5] FALLBACK PATH USED');
     return res.status(500).json({ 
       error: 'Internal server error',
       details: error.message 
