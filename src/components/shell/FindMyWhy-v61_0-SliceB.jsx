@@ -239,7 +239,14 @@ function deriveClarityArtifact(whyChain, patterns, insights, surfaceQuestion) {
 function formatArtifactForClipboard(artifact) {
   const { dm5OutputText, holdLightlyText, patterns } = artifact;
   console.log('formatArtifactForClipboard received:', { holdLightlyText, patterns, hasHoldLightly: !!holdLightlyText, patternsLength: patterns?.length });
-  const lines = ['Clarity Snapshot — FindMyWhy.ai', `Generated: ${new Date(artifact.createdAt).toLocaleDateString()}`, ''];
+  
+  // Format date and time: "12/18/2025 at 3:47:22 PM"
+  const date = new Date(artifact.createdAt);
+  const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+  const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+  const generatedLine = `Generated: ${dateStr} at ${timeStr}`;
+  
+  const lines = ['Clarity Snapshot — FindMyWhy.ai', generatedLine, ''];
   
   if (artifact.surfaceQuestion) {
     lines.push('Question:', `"${artifact.surfaceQuestion}"`, '');
