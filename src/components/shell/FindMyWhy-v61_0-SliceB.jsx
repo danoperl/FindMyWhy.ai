@@ -236,7 +236,9 @@ function deriveClarityArtifact(whyChain, patterns, insights, surfaceQuestion) {
   };
 }
 
-function formatArtifactForClipboard(artifact, dm5OutputText) {
+function formatArtifactForClipboard(artifact) {
+  const { dm5OutputText, holdLightlyText, patterns } = artifact;
+  console.log('formatArtifactForClipboard received:', { holdLightlyText, patterns, hasHoldLightly: !!holdLightlyText, patternsLength: patterns?.length });
   const lines = ['Clarity Snapshot — FindMyWhy.ai', `Generated: ${new Date(artifact.createdAt).toLocaleDateString()}`, ''];
   
   if (artifact.surfaceQuestion) {
@@ -270,22 +272,50 @@ function formatArtifactForClipboard(artifact, dm5OutputText) {
     lines.push('');
   }
   
-  // Remove DM4 "Patterns (low)" lists from final output
-  // Only include high/medium strength patterns
-  const significantPatterns = artifact.patterns.filter(p => p.strength !== 'low');
-  if (significantPatterns.length > 0) {
-    lines.push('Patterns:');
-    significantPatterns.forEach(p => lines.push(`• ${p.label} (${p.strength})`));
+  // SOMETHING YOU MIGHT HOLD LIGHTLY section
+  console.log('Checking holdLightlyText:', { holdLightlyText, type: typeof holdLightlyText, trimmed: holdLightlyText?.trim(), length: holdLightlyText?.trim()?.length });
+  if (holdLightlyText && typeof holdLightlyText === 'string' && holdLightlyText.trim().length > 0) {
+    console.log('Adding SOMETHING YOU MIGHT HOLD LIGHTLY section');
+    lines.push('SOMETHING YOU MIGHT HOLD LIGHTLY:');
+    lines.push(holdLightlyText.trim());
+    lines.push('');
+  } else {
+    console.log('SKIPPING SOMETHING YOU MIGHT HOLD LIGHTLY section - condition failed');
+  }
+  
+  // PATTERNS SURFACED section (includes all patterns with levels)
+  console.log('Checking patterns:', { patterns, isArray: Array.isArray(patterns), length: patterns?.length });
+  if (patterns && Array.isArray(patterns) && patterns.length > 0) {
+    console.log('Adding PATTERNS SURFACED section');
+    lines.push('PATTERNS SURFACED');
+    patterns.forEach(p => {
+      if (p && p.label && p.strength) {
+        // Map strength values: 'high', 'medium', 'low' -> 'high', 'med', 'low'
+        const levelDisplay = p.strength === 'medium' ? 'med' : p.strength;
+        lines.push(`• ${p.label} — ${levelDisplay}`);
+      }
+    });
+    lines.push('');
+  } else {
+    console.log('SKIPPING PATTERNS SURFACED section - condition failed');
   }
   
   return lines.join('\n');
 }
 
-function ClarityArtifactPanel({ artifact, dm5OutputText }) {
+function ClarityArtifactPanel({ artifact, dm5OutputText, holdLightlyText, patterns }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    const text = formatArtifactForClipboard(artifact, dm5OutputText);
+    const artifactWithExtras = {
+      ...artifact,
+      dm5OutputText,
+      holdLightlyText,
+      patterns,
+    };
+    console.log({ holdLightlyText, patterns, artifactHold: artifact.holdLightlyText, artifactPatterns: artifact.patterns, artifactWithExtras });
+    const text = formatArtifactForClipboard(artifactWithExtras);
+    console.log('Formatted text length:', text.length, 'First 500 chars:', text.substring(0, 500));
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -1207,6 +1237,11 @@ export default function FindMyWhyApp() {
   if (currentStep === 6) {
     const clarityArtifact = deriveClarityArtifact(whyChain, patterns, [{ text: insight }], surfaceQuestion);
     
+    // Compute holdLightlyText (matches UI rendering logic)
+    const holdLightlyText = patterns.length > 0 
+      ? `For now, it might be enough just to notice that this question keeps circling around ${patterns[0].label.toLowerCase()}.`
+      : 'For now, the main step was simply putting this question into words.';
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
@@ -1250,14 +1285,12 @@ export default function FindMyWhyApp() {
               <div className="bg-white border-2 border-slate-200 rounded-xl p-6">
                 <p className={`${fmyTheme.typography.label} mb-3`}>Something you might hold lightly:</p>
                 <p className="text-base text-slate-800 leading-relaxed">
-                  {patterns.length > 0 
-                    ? `For now, it might be enough just to notice that this question keeps circling around ${patterns[0].label.toLowerCase()}.`
-                    : 'For now, the main step was simply putting this question into words.'}
+                  {holdLightlyText}
                 </p>
               </div>
               
               {/* SLICE B: Clarity Artifact Panel */}
-              <ClarityArtifactPanel artifact={clarityArtifact} dm5OutputText={dm5OutputText} />
+              <ClarityArtifactPanel artifact={clarityArtifact} dm5OutputText={dm5OutputText} holdLightlyText={holdLightlyText} patterns={patterns} />
             </div>
           </FmyCard>
           
