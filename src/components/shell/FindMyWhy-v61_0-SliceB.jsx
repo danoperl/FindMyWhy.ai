@@ -425,6 +425,11 @@ export default function FindMyWhyApp() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingText, setEditingText] = useState('');
   
+  // DM4 Refine Loop state
+  const [refineUsed, setRefineUsed] = useState(false);
+  const [entryContext, setEntryContext] = useState('normal'); // 'normal' | 'refine'
+  const [whyCountError, setWhyCountError] = useState('');
+  
   // IC state
   const [icStage, setIcStage] = useState('input');
   const [icDecision, setIcDecision] = useState('');
@@ -449,10 +454,31 @@ export default function FindMyWhyApp() {
     setDm5OutputText("");
     setDm5Status('idle');
     setDm5Error("");
+    setRefineUsed(false);
+    setEntryContext('normal');
+    setWhyCountError('');
   };
 
   useEffect(() => {
     contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [currentStep]);
+
+  // DM4: Force clean recompute of patterns from current whyChain when mounting
+  useEffect(() => {
+    if (currentStep === 4 && whyChain.length >= 2) {
+      // Clean and trim WHY chain
+      const cleanedChain = whyChain
+        .map(w => ({ ...w, whyText: w.whyText.trim() }))
+        .filter(w => w.whyText.length > 0);
+      
+      if (cleanedChain.length >= 2) {
+        // Recompute patterns from current whyChain (clean recompute)
+        const p = extractPatterns(cleanedChain);
+        setPatterns(p);
+        setInsight(generateInsight(p));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
   const handleBack = () => {
@@ -472,6 +498,9 @@ export default function FindMyWhyApp() {
     setDm5OutputText('');
     setDm5Status('idle');
     setDm5Error('');
+    setRefineUsed(false);
+    setEntryContext('normal');
+    setWhyCountError('');
   };
 
   const handleBegin = () => {
@@ -484,22 +513,55 @@ export default function FindMyWhyApp() {
 
   const handleAddWhy = () => {
     if (!whyInput.trim()) return;
+    setWhyCountError(''); // Clear error when adding
     const newChain = [...whyChain, { id: `why-${Date.now()}`, whyText: whyInput.trim() }];
     setWhyChain(newChain);
     setWhyInput('');
     
     if (newChain.length >= MAX_DEPTH) {
-      const p = extractPatterns(newChain);
-      setPatterns(p);
-      setInsight(generateInsight(p));
+      // Clear derived state before navigating to ensure clean recompute
+      setPatterns([]);
+      setInsight('');
+      setDm4PayloadJson('');
+      setDm5OutputText('');
       setCurrentStep(4);
     }
   };
 
   const handleWhyComplete = () => {
-    const p = extractPatterns(whyChain);
-    setPatterns(p);
-    setInsight(generateInsight(p));
+    setWhyCountError('');
+    
+    // Defensively trim all WHY strings and drop empty ones
+    const cleanedChain = whyChain
+      .map(w => ({ ...w, whyText: w.whyText.trim() }))
+      .filter(w => w.whyText.length > 0);
+    
+    // Enforce max of 5 WHYs (defensive check)
+    const finalChain = cleanedChain.slice(0, MAX_DEPTH);
+    
+    // Guardrail: minimum WHY count (≥2) required before proceeding to DM4
+    if (finalChain.length < 2) {
+      setWhyCountError('Please add at least 2 WHY steps before continuing to patterns.');
+      return;
+    }
+    
+    // Update whyChain with cleaned data
+    setWhyChain(finalChain);
+    
+    // FORCE CLEAN RECOMPUTE: Clear all derived state before navigating to DM4
+    setPatterns([]);
+    setInsight('');
+    setDm4PayloadJson('');
+    setDm5OutputText('');
+    setDm5Status('idle');
+    setDm5Error('');
+    
+    // Reset entryContext after refine pass
+    if (entryContext === 'refine') {
+      setEntryContext('normal');
+    }
+    
+    // Navigate to DM4 - patterns will be recomputed in useEffect on mount
     setCurrentStep(4);
   };
 
@@ -521,6 +583,13 @@ export default function FindMyWhyApp() {
     ));
     setEditingIndex(null);
     setEditingText('');
+  };
+
+  const handleRefineWhys = () => {
+    // Set refine flags and navigate to DM3
+    setRefineUsed(true);
+    setEntryContext('refine');
+    setCurrentStep(3);
   };
 
   const handleDM4Continue = async () => {
@@ -1005,6 +1074,18 @@ export default function FindMyWhyApp() {
                 <p className={fmyTheme.typography.caption}>Explore layers of "why" at your pace.</p>
               </div>
               
+              {entryContext === 'refine' && (
+                <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                  <p className="text-sm text-amber-800 font-medium">Refining WHYs — edit, then continue to recompute patterns.</p>
+                </div>
+              )}
+              
+              {whyCountError && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                  <p className="text-sm text-red-800">{whyCountError}</p>
+                </div>
+              )}
+              
               <div className="flex items-center gap-3">
                 <span className={fmyTheme.typography.label}>Progress</span>
                 <div className="flex gap-1.5">
@@ -1145,9 +1226,11 @@ export default function FindMyWhyApp() {
               )}
               
               <div className="flex justify-center gap-3 pt-2">
-                <button onClick={() => setCurrentStep(3)} className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg">
-                  Refine WHYs
-                </button>
+                {!refineUsed && (
+                  <button onClick={handleRefineWhys} className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg">
+                    Refine WHYs
+                  </button>
+                )}
                 <button onClick={handleDM4Continue} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center gap-2">
                   Continue <ArrowRight size={18} />
                 </button>
