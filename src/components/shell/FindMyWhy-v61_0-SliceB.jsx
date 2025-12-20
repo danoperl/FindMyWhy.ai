@@ -148,7 +148,7 @@ function generateInsight(patterns) {
 // DM4 → DM5 PAYLOAD GENERATION
 // =============================================================================
 
-function buildDM4Payload(whyChain, patterns, surfaceQuestion, selectedDomain) {
+function buildDM4Payload(whyChain, patterns, surfaceQuestion, domainsSelected, otherSpecify) {
   // Extract evidence from whyChain for each pattern
   const whyTexts = whyChain.map(w => w.whyText);
   const whyTextLower = whyTexts.join(' ').toLowerCase();
@@ -207,9 +207,17 @@ function buildDM4Payload(whyChain, patterns, surfaceQuestion, selectedDomain) {
     fogIndicators.push('no-patterns-detected');
   }
   
+  // Build domain array for payload (include "other" with specify text if present)
+  const domainArray = domainsSelected.map(d => {
+    if (d === 'other' && otherSpecify && otherSpecify.trim()) {
+      return `other:${otherSpecify.trim()}`;
+    }
+    return d;
+  });
+
   const payload = {
     surfaceQuestion: surfaceQuestion || null,
-    domain: selectedDomain || null,
+    domains: domainArray.length > 0 ? domainArray : null,
     whyChain: whyTexts,
     themes: patternData.map(p => ({ id: p.id, label: p.label, category: p.category })),
     evidence: patternData.flatMap(p => p.evidence.map(e => ({ patternId: p.id, ...e }))),
@@ -394,6 +402,148 @@ function ClarityArtifactPanel({ artifact, dm5OutputText, holdLightlyText, patter
 // =============================================================================
 
 const DOMAINS = ['work', 'relationships', 'identity', 'habit', 'purpose', 'values', 'other'];
+
+// =============================================================================
+// DOMAIN-ANCHOR WEIGHTING MAP (for DM2 anchor detection)
+// =============================================================================
+
+// Domain-weighting map: domain -> anchor boost values (only identity/value/relational)
+const DOMAIN_ANCHOR_BOOSTS = {
+  work: {
+    'value': +1,
+    'identity': +1,
+    'relational': +0,
+  },
+  relationships: {
+    'relational': +2,
+    'value': +0,
+    'identity': +0,
+  },
+  identity: {
+    'identity': +2,
+    'value': +0,
+    'relational': +0,
+  },
+  habit: {
+    'identity': +1,
+    'value': +1,
+    'relational': +0,
+  },
+  purpose: {
+    'identity': +1,
+    'value': +1,
+    'relational': +0,
+  },
+  values: {
+    'value': +2,
+    'identity': +0,
+    'relational': +0,
+  },
+  other: {
+    'identity': +0,
+    'value': +0,
+    'relational': +0,
+  },
+};
+
+// Optional: keyword-to-anchor boost for "other" specify text (mapped to identity/value/relational only)
+const OTHER_SPECIFY_KEYWORD_BOOSTS = {
+  health: { 'identity': +1, 'value': +0, 'relational': +0 },
+  money: { 'value': +1, 'identity': +0, 'relational': +0 },
+  creativity: { 'identity': +1, 'value': +0, 'relational': +0 },
+};
+
+/**
+ * Get anchor boosts based on selected domains and optional otherSpecify text
+ * Returns a map of anchor -> boost value (only for identity/value/relational)
+ */
+function getAnchorBoostsFromDomains(domainsSelected, otherSpecify = '') {
+  const boosts = { identity: 0, value: 0, relational: 0 };
+  
+  // Apply boosts from each selected domain
+  domainsSelected.forEach(domain => {
+    const domainBoosts = DOMAIN_ANCHOR_BOOSTS[domain] || {};
+    if (domainBoosts.identity) boosts.identity += domainBoosts.identity;
+    if (domainBoosts.value) boosts.value += domainBoosts.value;
+    if (domainBoosts.relational) boosts.relational += domainBoosts.relational;
+  });
+  
+  // Optional: apply keyword-based boosts from otherSpecify
+  if (otherSpecify && otherSpecify.trim()) {
+    const otherSpecifyLower = otherSpecify.trim().toLowerCase();
+    Object.entries(OTHER_SPECIFY_KEYWORD_BOOSTS).forEach(([keyword, keywordBoosts]) => {
+      if (otherSpecifyLower.includes(keyword)) {
+        if (keywordBoosts.identity) boosts.identity += keywordBoosts.identity;
+        if (keywordBoosts.value) boosts.value += keywordBoosts.value;
+        if (keywordBoosts.relational) boosts.relational += keywordBoosts.relational;
+      }
+    });
+  }
+  
+  return boosts;
+}
+
+/**
+ * Rules-based anchor detection: scores the three anchor types based on surface question text
+ * Returns: 'identity' | 'value' | 'relational'
+ */
+function detectAnchor(surfaceQuestion, domainsSelected = [], otherSpecify = '') {
+  const text = (surfaceQuestion || '').toLowerCase();
+  
+  // Base scoring from question text (rules-based)
+  const baseScores = {
+    identity: 0,
+    value: 0,
+    relational: 0,
+  };
+  
+  // Identity anchor keywords
+  const identityKeywords = [
+    'who i am', 'who am i', 'identity', 'myself', 'becoming', 'become',
+    'person i', 'personality', 'self', 'authentic', 'true self', 'authenticity'
+  ];
+  identityKeywords.forEach(keyword => {
+    if (text.includes(keyword)) baseScores.identity += 2;
+  });
+  
+  // Value anchor keywords
+  const valueKeywords = [
+    'value', 'values', 'matters', 'matter', 'important', 'believe', 'belief',
+    'principle', 'principles', 'morals', 'ethics', 'care about', 'stand for'
+  ];
+  valueKeywords.forEach(keyword => {
+    if (text.includes(keyword)) baseScores.value += 2;
+  });
+  
+  // Relational anchor keywords
+  const relationalKeywords = [
+    'relationship', 'relationships', 'partner', 'friend', 'friends', 'family',
+    'parent', 'child', 'spouse', 'colleague', 'boss', 'people', 'others',
+    'social', 'connect', 'connection', 'commitment', 'role', 'roles'
+  ];
+  relationalKeywords.forEach(keyword => {
+    if (text.includes(keyword)) baseScores.relational += 2;
+  });
+  
+  // Get domain boosts
+  const boosts = getAnchorBoostsFromDomains(domainsSelected, otherSpecify);
+  
+  // Apply boosts to base scores
+  const finalScores = {
+    identity: baseScores.identity + (boosts.identity || 0),
+    value: baseScores.value + (boosts.value || 0),
+    relational: baseScores.relational + (boosts.relational || 0),
+  };
+  
+  // Deterministic tie-break: identity > value > relational
+  // Find the highest score
+  const maxScore = Math.max(finalScores.identity, finalScores.value, finalScores.relational);
+  
+  // Check in priority order (identity > value > relational)
+  if (finalScores.identity === maxScore) return 'identity';
+  if (finalScores.value === maxScore) return 'value';
+  return 'relational';
+}
 const EXAMPLE_PROMPTS = [
   "Why do I keep saying yes to things I don't want to do?",
   "Why do I procrastinate on things that matter?",
@@ -408,7 +558,9 @@ export default function FindMyWhyApp() {
   const [screen, setScreen] = useState("HOME"); // HOME | DM | IC
   const [currentStep, setCurrentStep] = useState(0);
   const [surfaceQuestion, setSurfaceQuestion] = useState('');
-  const [selectedDomain, setSelectedDomain] = useState(null);
+  const [domainsSelected, setDomainsSelected] = useState([]); // Array, max length 3
+  const [otherSpecify, setOtherSpecify] = useState(''); // String for "other" specification
+  const [domainSelectionError, setDomainSelectionError] = useState(''); // For over-selection feedback
   const [whyChain, setWhyChain] = useState([]);
   const [whyInput, setWhyInput] = useState('');
   const [patterns, setPatterns] = useState([]);
@@ -445,7 +597,9 @@ export default function FindMyWhyApp() {
   const resetDM = () => {
     setCurrentStep(0);
     setSurfaceQuestion("");
-    setSelectedDomain(null);
+    setDomainsSelected([]);
+    setOtherSpecify("");
+    setDomainSelectionError("");
     setWhyChain([]);
     setWhyInput("");
     setPatterns([]);
@@ -481,6 +635,16 @@ export default function FindMyWhyApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
+  // Auto-dismiss domain selection error after 3 seconds
+  useEffect(() => {
+    if (domainSelectionError) {
+      const timer = setTimeout(() => {
+        setDomainSelectionError('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [domainSelectionError]);
+
   const handleBack = () => {
     const prev = getPrevStep(currentStep);
     if (prev !== null) setCurrentStep(prev);
@@ -489,7 +653,9 @@ export default function FindMyWhyApp() {
   const handleReset = () => {
     setCurrentStep(0);
     setSurfaceQuestion('');
-    setSelectedDomain(null);
+    setDomainsSelected([]);
+    setOtherSpecify('');
+    setDomainSelectionError('');
     setWhyChain([]);
     setWhyInput('');
     setPatterns([]);
@@ -601,7 +767,7 @@ export default function FindMyWhyApp() {
       // Build or use existing DM4 payload
       let payloadJson = dm4PayloadJson;
       if (!payloadJson) {
-        payloadJson = buildDM4Payload(whyChain, patterns, surfaceQuestion, selectedDomain);
+        payloadJson = buildDM4Payload(whyChain, patterns, surfaceQuestion, domainsSelected, otherSpecify);
         setDm4PayloadJson(payloadJson);
       }
       
@@ -913,7 +1079,7 @@ export default function FindMyWhyApp() {
             
             <div className="space-y-5">
               <div>
-                <h2 className={fmyTheme.typography.heading}>What's the deeper question on your mind?</h2>
+                <h2 className={fmyTheme.typography.heading}>What's really on your mind?</h2>
                 <p className={`${fmyTheme.typography.caption} mt-1`}>Share something you'd like to explore.</p>
               </div>
               
@@ -970,10 +1136,7 @@ export default function FindMyWhyApp() {
             
             <div className="space-y-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM1</span>
-                  <h2 className={fmyTheme.typography.subheading}>Surface Mapping</h2>
-                </div>
+                <h2 className={`${fmyTheme.typography.subheading} mb-2`}>What areas of your life does this touch?</h2>
                 <p className={fmyTheme.typography.caption}>We'll clarify what this question is really about.</p>
               </div>
               
@@ -985,12 +1148,57 @@ export default function FindMyWhyApp() {
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-slate-700">What domain does this live in?</p>
                 <div className="flex flex-wrap gap-2">
-                  {DOMAINS.map((domain) => (
-                    <button key={domain} onClick={() => setSelectedDomain(domain)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedDomain === domain ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                      {domain}
-                    </button>
-                  ))}
+                  {DOMAINS.map((domain) => {
+                    const isSelected = domainsSelected.includes(domain);
+                    return (
+                      <button 
+                        key={domain} 
+                        onClick={() => {
+                          setDomainSelectionError(''); // Clear error on click
+                          if (isSelected) {
+                            // Toggle OFF: remove from array
+                            setDomainsSelected(prev => prev.filter(d => d !== domain));
+                            // Clear otherSpecify if "other" is deselected
+                            if (domain === 'other') {
+                              setOtherSpecify('');
+                            }
+                          } else {
+                            // Toggle ON: check if we can add (max 3)
+                            if (domainsSelected.length < 3) {
+                              setDomainsSelected(prev => [...prev, domain]);
+                            } else {
+                              // Over-selection: show error
+                              setDomainSelectionError('Choose up to 3 domains');
+                            }
+                          }
+                        }} 
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isSelected ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                      >
+                        {domain}
+                      </button>
+                    );
+                  })}
                 </div>
+                <p className="text-xs text-slate-500 mt-1">Choose up to 3</p>
+                
+                {domainSelectionError && (
+                  <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-lg mt-2">
+                    <p className="text-sm text-amber-800">{domainSelectionError}</p>
+                  </div>
+                )}
+                
+                {domainsSelected.includes('other') && (
+                  <div className="mt-3">
+                    <input
+                      type="text"
+                      value={otherSpecify}
+                      onChange={(e) => setOtherSpecify(e.target.value.slice(0, 100))}
+                      placeholder="e.g., health, money, creativity"
+                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-900 text-sm"
+                      maxLength={100}
+                    />
+                  </div>
+                )}
               </div>
               
               <div className="flex justify-center pt-2">
@@ -1009,6 +1217,49 @@ export default function FindMyWhyApp() {
   // DM2 - Anchor Detection
   // ─────────────────────────────────────────────────────────────────────────────
   if (currentStep === 2) {
+    // Detect winning anchor using rules-based scoring + domain boosts
+    const winningAnchor = detectAnchor(surfaceQuestion, domainsSelected, otherSpecify);
+    
+    // Anchor card configuration
+    const anchorCards = [
+      {
+        key: 'identity',
+        emoji: '🪞',
+        label: 'Identity Anchors',
+        description: 'Who you see yourself as',
+        bgColor: 'bg-purple-50',
+        borderColor: 'border-purple-200',
+        textColor: 'text-purple-800',
+        descColor: 'text-purple-700',
+        highlightBorder: 'border-purple-500',
+        highlightBg: 'bg-purple-100',
+      },
+      {
+        key: 'value',
+        emoji: '⚖️',
+        label: 'Value Anchors',
+        description: 'What matters most to you',
+        bgColor: 'bg-amber-50',
+        borderColor: 'border-amber-200',
+        textColor: 'text-amber-800',
+        descColor: 'text-amber-700',
+        highlightBorder: 'border-amber-500',
+        highlightBg: 'bg-amber-100',
+      },
+      {
+        key: 'relational',
+        emoji: '🤝',
+        label: 'Relational Anchors',
+        description: 'Key relationships and roles',
+        bgColor: 'bg-pink-50',
+        borderColor: 'border-pink-200',
+        textColor: 'text-pink-800',
+        descColor: 'text-pink-700',
+        highlightBorder: 'border-pink-500',
+        highlightBg: 'bg-pink-100',
+      },
+    ];
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
@@ -1019,29 +1270,29 @@ export default function FindMyWhyApp() {
             
             <div className="space-y-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM2</span>
-                  <h2 className={fmyTheme.typography.subheading}>Anchor Detection</h2>
-                </div>
+                <h2 className={`${fmyTheme.typography.subheading} mb-2`}>What's this really about?</h2>
                 <p className={fmyTheme.typography.caption}>Looking for identity, values, and relational anchors.</p>
               </div>
               
               <div className="grid gap-3">
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-purple-800">🪞 Identity Anchors</p>
-                  <p className="text-xs text-purple-700 mt-1">Who you see yourself as</p>
-                </div>
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-amber-800">⚖️ Value Anchors</p>
-                  <p className="text-xs text-amber-700 mt-1">What matters most to you</p>
-                </div>
-                <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-pink-800">🤝 Relational Anchors</p>
-                  <p className="text-xs text-pink-700 mt-1">Key relationships and roles</p>
-                </div>
+                {anchorCards.map((card) => {
+                  const isWinning = card.key === winningAnchor;
+                  return (
+                    <div
+                      key={card.key}
+                      className={`${card.bgColor} ${isWinning ? 'border-4' : 'border-2'} ${isWinning ? card.highlightBorder : card.borderColor} rounded-lg p-4 ${isWinning ? card.highlightBg : ''} transition-all`}
+                    >
+                      <p className={`text-sm font-semibold ${card.textColor}`}>{card.emoji} {card.label}</p>
+                      <p className={`text-xs ${card.descColor} mt-1`}>{card.description}</p>
+                    </div>
+                  );
+                })}
               </div>
               
-              <div className="flex justify-center pt-2">
+              <div className="flex justify-center gap-3 pt-2">
+                <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium rounded-lg border border-slate-300 flex items-center gap-2">
+                  <ArrowLeft size={16} /> Back
+                </button>
                 <button onClick={handleDM2Continue} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center gap-2">
                   Continue <ArrowRight size={18} />
                 </button>
@@ -1067,10 +1318,7 @@ export default function FindMyWhyApp() {
             
             <div className="space-y-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM3</span>
-                  <h2 className={fmyTheme.typography.subheading}>WHY-Chain Exploration</h2>
-                </div>
+                <h2 className={`${fmyTheme.typography.subheading} mb-2`}>Why does this matter?</h2>
                 <p className={fmyTheme.typography.caption}>Explore layers of "why" at your pace.</p>
               </div>
               
@@ -1139,7 +1387,7 @@ export default function FindMyWhyApp() {
               
               {whyChain.length < MAX_DEPTH && (
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-slate-700 block">Next WHY</label>
+                  <label className="text-sm font-semibold text-slate-700 block">I believe this is my reason why:</label>
                   <textarea
                     value={whyInput}
                     onChange={(e) => setWhyInput(e.target.value.slice(0, 300))}
@@ -1153,7 +1401,7 @@ export default function FindMyWhyApp() {
               <div className="flex flex-col sm:flex-row sm:justify-center gap-3 pt-2">
                 {whyChain.length < MAX_DEPTH && (
                   <button onClick={handleAddWhy} disabled={!whyInput.trim()} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-semibold rounded-lg">
-                    Add this step
+                    Add My Why
                   </button>
                 )}
                 {whyChain.length > 0 && (
@@ -1191,10 +1439,7 @@ export default function FindMyWhyApp() {
             
             <div className="space-y-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM4</span>
-                  <h2 className={fmyTheme.typography.subheading}>Pattern Recognition</h2>
-                </div>
+                <h2 className={`${fmyTheme.typography.subheading} mb-2`}>What patterns keep showing up with you?</h2>
                 <p className={fmyTheme.typography.caption}>Themes surfaced from your WHY-Chain.</p>
               </div>
               
@@ -1256,10 +1501,7 @@ export default function FindMyWhyApp() {
             
             <div className="space-y-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM5</span>
-                  <h2 className={fmyTheme.typography.subheading}>Insight</h2>
-                </div>
+                <h2 className={`${fmyTheme.typography.subheading} mb-2`}>What this all adds up to…</h2>
                 <p className={fmyTheme.typography.caption}>A neutral look at the themes.</p>
               </div>
               
@@ -1343,11 +1585,8 @@ export default function FindMyWhyApp() {
             
             <div className="space-y-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM6</span>
-                  <h2 className={fmyTheme.typography.subheading}>Close</h2>
-                </div>
-                <p className={fmyTheme.typography.caption}>A brief reflection on where you've landed.</p>
+                <h2 className={`${fmyTheme.typography.subheading} mb-2`}>Your clarity snapshot</h2>
+                <p className={fmyTheme.typography.caption}>Here's what has emerged, with a brief reflection on where you've landed.</p>
               </div>
               
               {/* Exploration Complete */}
