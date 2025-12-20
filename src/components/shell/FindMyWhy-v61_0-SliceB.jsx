@@ -1309,7 +1309,7 @@ export default function FindMyWhyApp() {
           </div>
           
           <p className="text-center text-xs text-slate-500">
-            FindMyWhy.ai · v62.0 · Exit-support, not engagement
+            FindMyWhy.ai · v63.1 · ©2025 | FMY?, LLC, all rights reserved.
           </p>
         </div>
       </div>
