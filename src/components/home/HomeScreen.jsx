@@ -126,10 +126,9 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
       </div>
 
       {/* Footer */}
-      <div className="max-w-md w-full px-4 pb-4">
-        <p className="text-xs text-slate-500 text-center">
-          "<span className="font-semibold">FindMyWhy</span> isn't Therapy or Coaching — it's your brain with super-charged<br />
-          AI Clarity, helping you make sense of your own thoughts."
+      <div className="max-w-md w-full px-4 pb-4 -mt-4">
+        <p className="text-sm text-slate-500 text-center">
+          <span className="font-semibold">FindMyWhy®</span> isn't Therapy or Coaching — it's your brain with super-charged AI Clarity that can help you to make sense of your own thoughts.
         </p>
       </div>
     </div>
