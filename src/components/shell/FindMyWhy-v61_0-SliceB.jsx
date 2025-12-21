@@ -145,6 +145,150 @@ function generateInsight(patterns) {
 }
 
 // =============================================================================
+// QC PATTERN TAGS EXTRACTION (v64.1 - Deterministic)
+// =============================================================================
+
+/**
+ * Deterministic tag extraction from QC inputs/outputs
+ * Returns 2-3 tags (max 4) based on keyword presence in QC data
+ * Enforces minimum of 2 tags when SIGNALS section renders
+ */
+function extractQcPatternTags(qc2_choice_frame, qc3_influences, qc4_forced_pick, qc5Results) {
+  // Build text blob from available inputs/outputs
+  const textParts = [
+    qc2_choice_frame || '',
+    qc3_influences || '',
+    qc4_forced_pick || '',
+    qc5Results?.instinctual_pull || '',
+    qc5Results?.what_influenced_it || '',
+  ];
+  const textBlob = textParts.join(' ').toLowerCase();
+
+  // Tag keyword mappings (specific tags rank higher)
+  const tagMappings = [
+    // High priority (specific, situational)
+    { keywords: ['comfort', 'comfortable', 'cozy', 'relax', 'rest', 'tired', 'exhausted'], tag: 'comfort' },
+    { keywords: ['uncertainty', 'uncertain', 'unsure', 'doubt', 'confused', 'confusion'], tag: 'uncertainty' },
+    { keywords: ['energy', 'energetic', 'motivated', 'motivation', 'drive'], tag: 'energy' },
+    { keywords: ['money', 'financial', 'cost', 'expensive', 'afford', 'budget', 'spend'], tag: 'money' },
+    { keywords: ['time', 'timing', 'quick', 'fast', 'rush', 'hurry', 'deadline', 'schedule'], tag: 'timing' },
+    { keywords: ['social', 'people', 'others', 'friends', 'family', 'alone', 'lonely'], tag: 'social' },
+    { keywords: ['avoidance', 'avoid', 'escape', 'procrastinate', 'delay', 'postpone'], tag: 'avoidance' },
+    { keywords: ['novelty', 'new', 'different', 'try', 'experiment', 'curious', 'curiosity'], tag: 'novelty' },
+    { keywords: ['security', 'safe', 'secure', 'stable', 'stability', 'risk', 'risky'], tag: 'security' },
+    { keywords: ['connection', 'connect', 'relationship', 'bond', 'close', 'intimacy'], tag: 'connection' },
+    { keywords: ['effort', 'work', 'hard', 'difficult', 'challenge', 'struggle', 'easy', 'simple'], tag: 'effort' },
+    { keywords: ['convenience', 'convenient', 'easy', 'simple', 'quick', 'fast'], tag: 'convenience' },
+    // Lower priority (generic - demoted to avoid appearing alone)
+    { keywords: ['should', 'must', 'have to', 'need to', 'expected'], tag: 'responsibility' },
+    { keywords: ['fear', 'afraid', 'worry', 'anxious', 'scared'], tag: 'fear' },
+    // Ultra-generic (lowest priority - only appear with other tags)
+    { keywords: ['want', 'desire', 'wish', 'hope'], tag: 'desire' },
+  ];
+
+  // Fallback pool for backfilling when only one tag detected (ordered by preference)
+  const FALLBACK_TAGS = ['effort', 'comfort', 'convenience', 'uncertainty'];
+
+  // Detect tags by keyword presence
+  const tagScores = {};
+
+  tagMappings.forEach((mapping, index) => {
+    const { keywords, tag } = mapping;
+    const matches = keywords.filter(keyword => textBlob.includes(keyword)).length;
+    if (matches > 0) {
+      // Score: number of keyword matches + priority boost (earlier tags = higher priority)
+      // Ultra-generic tags (desire) get strong negative boost to demote them below situational tags
+      let priorityBoost = 0;
+      if (index < 12) {
+        priorityBoost = 1; // High priority situational tags
+      } else if (tag === 'desire') {
+        priorityBoost = -3; // Strong demotion: ensures #desire ranks below situational tags even with same match count
+      }
+      tagScores[tag] = (tagScores[tag] || 0) + matches + priorityBoost;
+    }
+  });
+
+  // Sort by score (descending) and deduplicate
+  const sortedTags = Object.entries(tagScores)
+    .sort((a, b) => b[1] - a[1])
+    .map(([tag]) => tag);
+
+  // Minimum enforcement: if zero tags, omit SIGNALS entirely
+  if (sortedTags.length === 0) {
+    return [];
+  }
+
+  // If only one tag detected, backfill with one from fallback pool
+  if (sortedTags.length === 1) {
+    const existingTag = sortedTags[0];
+    // Find first fallback tag that's not already present
+    const fallbackTag = FALLBACK_TAGS.find(tag => tag !== existingTag);
+    if (fallbackTag) {
+      return [existingTag, fallbackTag];
+    }
+    // If all fallbacks are the same as existing, return as-is (shouldn't happen, but safe)
+    return sortedTags;
+  }
+
+  // If 2+ tags, return up to 4 (preferred 2-3, hard max 4)
+  return sortedTags.slice(0, 4);
+}
+
+// =============================================================================
+// QC TENSION DETECTION (v64.1 - Deterministic)
+// =============================================================================
+
+/**
+ * Detects mismatch/contradiction between forced pick and distilled choice/framing
+ * Returns tension description if mismatch detected, null otherwise
+ */
+function detectQcTension(qc2_choice_frame, qc4_forced_pick, qc5Results) {
+  // Conservative detection: only show when fairly sure
+  if (!qc4_forced_pick || !qc2_choice_frame) return null;
+
+  const forcedPickLower = qc4_forced_pick.toLowerCase().trim();
+  const choiceFrameLower = qc2_choice_frame.toLowerCase().trim();
+
+  // Check if instinctual_pull contains tension indicators
+  const instinctualPull = qc5Results?.instinctual_pull || '';
+  const hasTensionPhrasing = instinctualPull.match(/\b(vs|versus|between|torn|conflicted|split|divided)\b/i);
+
+  // Check if distilled_choice does NOT include forced pick
+  const distilledChoice = qc5Results?.distilled_choice || '';
+  const distilledChoiceLower = distilledChoice.toLowerCase();
+  
+  // Extract key words from forced pick (first 2-3 words)
+  const forcedPickWords = forcedPickLower.split(/\s+/).slice(0, 3).filter(w => w.length > 2);
+  const forcedPickInDistilled = forcedPickWords.some(word => distilledChoiceLower.includes(word));
+
+  // Check if choice frame implies two options but forced pick not reflected
+  const frameHasOptions = choiceFrameLower.match(/\b(or|vs|versus|between|either)\b/i);
+  const frameWords = choiceFrameLower.split(/\s+/).slice(0, 5).filter(w => w.length > 2);
+  const forcedPickInFrame = forcedPickWords.some(word => frameWords.some(fw => fw.includes(word) || word.includes(fw)));
+
+  // Trigger conditions (conservative - need clear signal)
+  if (hasTensionPhrasing && !forcedPickInDistilled) {
+    // Tension phrasing exists and forced pick not in distilled choice
+    const shortFrame = qc2_choice_frame.split(/\s+/).slice(0, 4).join(' ');
+    return {
+      detected: true,
+      description: `Your forced pick leans toward "${qc4_forced_pick}", while your framing highlights ${shortFrame}.`
+    };
+  }
+
+  if (frameHasOptions && !forcedPickInFrame && !forcedPickInDistilled) {
+    // Frame has options but forced pick doesn't align with frame or distilled
+    const shortFrame = qc2_choice_frame.split(/\s+/).slice(0, 4).join(' ');
+    return {
+      detected: true,
+      description: `Your forced pick leans toward "${qc4_forced_pick}", while your framing highlights ${shortFrame}.`
+    };
+  }
+
+  return null;
+}
+
+// =============================================================================
 // DM4 → DM5 PAYLOAD GENERATION
 // =============================================================================
 
@@ -939,19 +1083,20 @@ export default function FindMyWhyApp() {
 
   const icHandleAnswer = (key) => {
     if (!icUserInput.trim()) return;
-    const newAnswers = { ...icAnswers, [key]: icUserInput };
-    setIcAnswers(newAnswers);
+    
+    // Clear input first to avoid async race
+    const answerText = icUserInput.trim();
     setIcUserInput('');
-    if (key === 'q1') setIcStage('q2');
-    else if (key === 'q2') setIcStage('q3');
-    else if (key === 'q3') {
-      const text = `${newAnswers.q1} ${newAnswers.q2} ${newAnswers.q3}`.toLowerCase();
-      const detectedTags = [];
-      if (text.match(/comfort|tired|relax|easy/)) detectedTags.push('comfort');
-      if (text.match(/time|quick|fast|rush/)) detectedTags.push('speed');
-      if (text.match(/new|try|curious|different/)) detectedTags.push('novelty');
-      if (text.match(/should|need to|have to|must/)) detectedTags.push('responsibility');
-      setIcTags(detectedTags.slice(0, 3));
+    
+    // Atomic stage handling - perform answer persistence and stage transitions together
+    if (key === 'q1') {
+      setIcAnswers(prev => ({ ...prev, q1: answerText }));
+      setIcStage('q2');
+    } else if (key === 'q2') {
+      setIcAnswers(prev => ({ ...prev, q2: answerText }));
+      setIcStage('q3');
+    } else if (key === 'q3') {
+      setIcAnswers(prev => ({ ...prev, q3: answerText }));
       setIcStage('results');
     }
   };
@@ -1107,74 +1252,162 @@ export default function FindMyWhyApp() {
               )}
 
               {/* QC-5 Results (Happy Path) */}
-              {showQc5Results && (
-                <>
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 space-y-4">
-                    <div>
-                      <p className={`${fmyTheme.typography.label} text-green-700 mb-1`}>Your distilled choice</p>
-                      <p className="text-lg font-bold text-slate-900">{qc5Results.distilled_choice}</p>
-                    </div>
-                    <div className="border-t border-green-200 pt-4">
-                      <p className={`${fmyTheme.typography.label} text-green-700 mb-2`}>What influenced it</p>
-                      <p className="text-slate-800">{qc5Results.what_influenced_it}</p>
-                    </div>
-                  </div>
+              {showQc5Results && (() => {
+                // Extract pattern tags and detect tension
+                const patternTags = extractQcPatternTags(
+                  icAnswers.q1,
+                  icAnswers.q2,
+                  icAnswers.q3,
+                  qc5Results
+                );
+                const tension = detectQcTension(
+                  icAnswers.q1,
+                  icAnswers.q3,
+                  qc5Results
+                );
 
-                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-6 space-y-4">
-                    <div>
-                      <p className={`${fmyTheme.typography.label} text-purple-700 mb-2`}>The instinctual pull</p>
-                      <p className="text-slate-800">{qc5Results.instinctual_pull}</p>
+                return (
+                  <>
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 space-y-4">
+                      <div>
+                        <p className={`${fmyTheme.typography.label} text-green-700 mb-1`}>Your distilled choice</p>
+                        <p className="text-lg font-bold text-slate-900">{qc5Results.distilled_choice}</p>
+                      </div>
+                      <div className="border-t border-green-200 pt-4">
+                        <p className={`${fmyTheme.typography.label} text-green-700 mb-2`}>What influenced it</p>
+                        <p className="text-slate-800">{qc5Results.what_influenced_it}</p>
+                      </div>
                     </div>
-                    <div className="border-t border-purple-200 pt-4">
-                      <p className={`${fmyTheme.typography.label} text-purple-700 mb-2`}>What this says about this moment</p>
-                      <p className="text-slate-800">{qc5Results.what_this_says_about_this_moment}</p>
-                    </div>
-                  </div>
 
-                  {(qc5Results.reframe_want || qc5Results.reframe_need) && (
-                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 space-y-4">
-                      <p className={`${fmyTheme.typography.label} text-amber-700 mb-3`}>Reframe this choice</p>
-                      {qc5Results.reframe_want && (
-                        <div>
-                          <p className="text-sm font-semibold text-amber-800 mb-1">Want lens</p>
-                          <p className="text-slate-800">{qc5Results.reframe_want}</p>
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-6 space-y-4">
+                      <div>
+                        <p className={`${fmyTheme.typography.label} text-purple-700 mb-2`}>The instinctual pull</p>
+                        <p className="text-slate-800">{qc5Results.instinctual_pull}</p>
+                      </div>
+                    </div>
+
+                    {/* Pattern Tags Section (v64.1) */}
+                    {patternTags.length > 0 && (
+                      <div className="bg-white border-2 border-slate-200 rounded-xl p-5">
+                        <p className={`${fmyTheme.typography.label} text-slate-600 mb-3`}>SIGNALS</p>
+                        <div className="flex flex-wrap gap-2">
+                          {patternTags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="inline-flex items-center px-3 py-1.5 bg-slate-100 border border-slate-300 rounded-full text-xs font-medium text-slate-700"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
                         </div>
-                      )}
-                      {qc5Results.reframe_need && (
-                        <div className={qc5Results.reframe_want ? 'border-t border-amber-200 pt-4' : ''}>
-                          <p className="text-sm font-semibold text-amber-800 mb-1">Need lens</p>
-                          <p className="text-slate-800">{qc5Results.reframe_need}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    )}
 
-                  {/* Optional footer nudge */}
-                  <div className="text-center pt-2">
-                    <p className="text-xs text-slate-500 italic">
-                      Want to explore why this pattern shows up? Deep-Dive Mode can walk you through it.
-                    </p>
-                  </div>
-                </>
-              )}
+                    {/* Notable Tension Card (v64.1) */}
+                    {tension && tension.detected && (
+                      <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 rounded-xl p-5">
+                        <p className={`${fmyTheme.typography.label} text-orange-700 mb-2`}>NOTABLE TENSION</p>
+                        <p className="text-sm text-slate-800">{tension.description}</p>
+                      </div>
+                    )}
+
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-6 space-y-4">
+                      <div>
+                        <p className={`${fmyTheme.typography.label} text-purple-700 mb-2`}>What this says about this moment</p>
+                        <p className="text-slate-800">{qc5Results.what_this_says_about_this_moment}</p>
+                      </div>
+                    </div>
+
+                    {(qc5Results.reframe_want || qc5Results.reframe_need) && (
+                      <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 space-y-4">
+                        <p className={`${fmyTheme.typography.label} text-amber-700 mb-3`}>Reframe this choice</p>
+                        {qc5Results.reframe_want && (
+                          <div>
+                            <p className="text-sm font-semibold text-amber-800 mb-1">Want lens</p>
+                            <p className="text-slate-800">{qc5Results.reframe_want}</p>
+                          </div>
+                        )}
+                        {qc5Results.reframe_need && (
+                          <div className={qc5Results.reframe_want ? 'border-t border-amber-200 pt-4' : ''}>
+                            <p className="text-sm font-semibold text-amber-800 mb-1">Need lens</p>
+                            <p className="text-slate-800">{qc5Results.reframe_need}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Optional footer nudge */}
+                    <div className="text-center pt-2">
+                      <p className="text-xs text-slate-500 italic">
+                        Want to explore why this pattern shows up? Deep-Dive Mode can walk you through it.
+                      </p>
+                    </div>
+                  </>
+                );
+              })()}
 
               {/* Fail-Soft Echo (Error State) */}
+              {showFailSoft && (() => {
+                // Extract pattern tags from raw inputs (no qc5Results available)
+                const patternTags = extractQcPatternTags(
+                  icAnswers.q1,
+                  icAnswers.q2,
+                  icAnswers.q3,
+                  null
+                );
+                // Detect tension from raw inputs (compare qc2 frame vs qc4 pick)
+                const tension = detectQcTension(
+                  icAnswers.q1,
+                  icAnswers.q3,
+                  null
+                );
+
+                return (
+                  <>
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 space-y-4">
+                      <div>
+                        <p className={`${fmyTheme.typography.label} text-green-700 mb-1`}>Your distilled choice</p>
+                        <p className="text-lg font-bold text-slate-900">{icAnswers.q3}</p>
+                      </div>
+                      <div className="border-t border-green-200 pt-4">
+                        <p className={`${fmyTheme.typography.label} text-green-700 mb-2`}>What influenced it</p>
+                        <p className="text-slate-800">{icAnswers.q2}</p>
+                      </div>
+                    </div>
+
+                    {/* Pattern Tags Section (v64.1) - Fail-soft mode */}
+                    {patternTags.length > 0 && (
+                      <div className="bg-white border-2 border-slate-200 rounded-xl p-5">
+                        <p className={`${fmyTheme.typography.label} text-slate-600 mb-3`}>SIGNALS</p>
+                        <div className="flex flex-wrap gap-2">
+                          {patternTags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="inline-flex items-center px-3 py-1.5 bg-slate-100 border border-slate-300 rounded-full text-xs font-medium text-slate-700"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Notable Tension Card (v64.1) - Fail-soft mode */}
+                    {tension && tension.detected && (
+                      <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 rounded-xl p-5">
+                        <p className={`${fmyTheme.typography.label} text-orange-700 mb-2`}>NOTABLE TENSION</p>
+                        <p className="text-sm text-slate-800">{tension.description}</p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+
+              {/* Fail-soft footer message (global footer, separate from SIGNALS/TENSION) */}
               {showFailSoft && (
-                <>
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 space-y-4">
-                    <div>
-                      <p className={`${fmyTheme.typography.label} text-green-700 mb-1`}>Your distilled choice</p>
-                      <p className="text-lg font-bold text-slate-900">{icAnswers.q3}</p>
-                    </div>
-                    <div className="border-t border-green-200 pt-4">
-                      <p className={`${fmyTheme.typography.label} text-green-700 mb-2`}>What influenced it</p>
-                      <p className="text-slate-800">{icAnswers.q2}</p>
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-300 rounded-xl p-4">
-                    <p className="text-sm text-slate-500 italic">Quick insight unavailable right now.</p>
-                  </div>
-                </>
+                <div className="text-center pt-4">
+                  <p className="text-xs text-slate-400 italic">Quick insight unavailable right now.</p>
+                </div>
               )}
 
               <div className="flex flex-col items-center gap-3 pt-2">
