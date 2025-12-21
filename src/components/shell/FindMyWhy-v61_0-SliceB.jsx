@@ -404,6 +404,25 @@ function ClarityArtifactPanel({ artifact, dm5OutputText, holdLightlyText, patter
 const DOMAINS = ['work', 'relationships', 'identity', 'habit', 'purpose', 'values', 'other'];
 
 // =============================================================================
+// DOMAIN LABEL FORMATTING
+// =============================================================================
+
+function formatDomainLabel(domain) {
+  const labelMap = {
+    work: 'Work',
+    relationships: 'Relationships',
+    identity: 'Identity',
+    habit: 'Habit',
+    purpose: 'Purpose',
+    values: 'Values',
+    other: 'Other',
+  };
+  // Handle "other:specify" format by extracting just "other"
+  const baseDomain = domain.includes(':') ? domain.split(':')[0] : domain;
+  return labelMap[baseDomain] || 'Other';
+}
+
+// =============================================================================
 // DOMAIN-ANCHOR WEIGHTING MAP (for DM2 anchor detection)
 // =============================================================================
 
@@ -1440,6 +1459,11 @@ export default function FindMyWhyApp() {
             <div className="space-y-6">
               <div>
                 <h2 className={`${fmyTheme.typography.subheading} mb-2`}>What patterns keep showing up with you?</h2>
+                {domainsSelected.length > 0 && (
+                  <p className="text-xs text-slate-500 mt-1 mb-2">
+                    Domains: {domainsSelected.map(formatDomainLabel).join(' · ')}
+                  </p>
+                )}
                 <p className={fmyTheme.typography.caption}>Themes surfaced from your WHY-Chain.</p>
               </div>
               

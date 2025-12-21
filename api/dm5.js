@@ -83,12 +83,35 @@ export default async function handler(req, res) {
     // Model configurable via env (default: gpt-4o-mini)
     const OPENAI_MODEL = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
 
+    // Format domain labels for display
+    const formatDomainLabel = (domain) => {
+      const labelMap = {
+        work: 'Work',
+        relationships: 'Relationships',
+        identity: 'Identity',
+        habit: 'Habit',
+        purpose: 'Purpose',
+        values: 'Values',
+        other: 'Other',
+      };
+      // Handle "other:specify" format by extracting just "other"
+      const baseDomain = domain.includes(':') ? domain.split(':')[0] : domain;
+      return labelMap[baseDomain] || 'Other';
+    };
+
+    // Build domains context line if domains exist
+    let domainsContextLine = '';
+    if (dm4Payload.domains && Array.isArray(dm4Payload.domains) && dm4Payload.domains.length > 0) {
+      const domainLabels = dm4Payload.domains.map(formatDomainLabel);
+      domainsContextLine = `Domains involved: ${domainLabels.join(', ')}.\n\n`;
+    }
+
     // Build user message from DM4 payload
     const userMessage = `DM4 Analysis Data:
 
 Surface Question: ${dm4Payload.surfaceQuestion || 'Not provided'}
 
-WHY Chain:
+${domainsContextLine}WHY Chain:
 ${dm4Payload.whyChain?.map((why, i) => `${i + 1}. ${why}`).join('\n') || 'None'}
 
 Themes Detected:
