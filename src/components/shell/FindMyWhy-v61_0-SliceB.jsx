@@ -610,6 +610,11 @@ export default function FindMyWhyApp() {
   const [icShowTooltip, setIcShowTooltip] = useState(false);
   const [icSaved, setIcSaved] = useState(false);
   
+  // QC-5 state
+  const [qc5Status, setQc5Status] = useState('idle'); // 'idle' | 'loading' | 'error'
+  const [qc5Results, setQc5Results] = useState(null); // { distilled_choice, what_influenced_it, instinctual_pull, what_this_says_about_this_moment, reframe_want, reframe_need }
+  const [qc5Error, setQc5Error] = useState('');
+  
   const contentRef = useRef(null);
   const MAX_DEPTH = 5;
 
@@ -663,6 +668,67 @@ export default function FindMyWhyApp() {
       return () => clearTimeout(timer);
     }
   }, [domainSelectionError]);
+
+  // QC-5 API call when results stage is reached
+  useEffect(() => {
+    if (icStage === 'results' && qc5Status === 'idle' && !qc5Results) {
+      // Map IC answers to QC inputs
+      const qc1_decision = icAnswers.initial || '';
+      const qc2_choice_frame = icAnswers.q1 || '';
+      const qc3_influences = icAnswers.q2 || '';
+      const qc4_forced_pick = icAnswers.q3 || '';
+
+      // Only call API if all inputs are present
+      if (qc1_decision && qc2_choice_frame && qc3_influences && qc4_forced_pick) {
+        setQc5Status('loading');
+        setQc5Error('');
+
+        fetch('/api/qc', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            qc1_decision,
+            qc2_choice_frame,
+            qc3_influences,
+            qc4_forced_pick,
+          }),
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+              throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            // Validate response has all required keys
+            const requiredKeys = [
+              'distilled_choice',
+              'what_influenced_it',
+              'instinctual_pull',
+              'what_this_says_about_this_moment',
+              'reframe_want',
+              'reframe_need'
+            ];
+            const hasAllKeys = requiredKeys.every(key => key in data && typeof data[key] === 'string');
+            
+            if (hasAllKeys) {
+              setQc5Results(data);
+              setQc5Status('idle');
+            } else {
+              throw new Error('Invalid response format');
+            }
+          })
+          .catch((error) => {
+            console.error('QC-5 API error:', error);
+            setQc5Error(error.message || 'Failed to generate clarity');
+            setQc5Status('error');
+          });
+      }
+    }
+  }, [icStage, qc5Status, qc5Results, icAnswers]);
 
   const handleBack = () => {
     const prev = getPrevStep(currentStep);
@@ -897,6 +963,9 @@ export default function FindMyWhyApp() {
     setIcAnswers({ initial: '', q1: '', q2: '', q3: '' });
     setIcTags([]);
     setIcSaved(false);
+    setQc5Status('idle');
+    setQc5Results(null);
+    setQc5Error('');
   };
 
   const handleIcToDm = () => {
@@ -1006,8 +1075,13 @@ export default function FindMyWhyApp() {
       );
     }
 
-    // IC Results stage
+    // IC Results stage (QC-5)
     if (icStage === 'results') {
+      // Determine if we should show QC-5 results or fail-soft echo
+      const showQc5Results = qc5Status === 'idle' && qc5Results !== null;
+      // Show fail-soft if: error occurred, or we're idle without results (API call failed or never happened)
+      const showFailSoft = qc5Status === 'error' || (qc5Status === 'idle' && qc5Results === null);
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
           <style>{`
@@ -1018,30 +1092,91 @@ export default function FindMyWhyApp() {
             <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
             <FmyCard className="space-y-6">
               <h2 className={fmyTheme.typography.heading}>💡 Here's what we learned</h2>
+              
+              {/* Original Question */}
               <div className="bg-white border-2 border-indigo-200 rounded-xl p-5">
-                <p className={`${fmyTheme.typography.label} text-indigo-700 mb-2`}>📌 Your Original Question</p>
+                <p className={`${fmyTheme.typography.label} text-indigo-700 mb-2`}>Your original question</p>
                 <p className="text-base font-medium text-slate-900">{icAnswers.initial}</p>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 space-y-4">
-                <div>
-                  <p className={`${fmyTheme.typography.label} text-green-700 mb-1`}>Your Distilled Choice</p>
-                  <p className="text-lg font-bold text-slate-900">{icAnswers.q3}</p>
-                </div>
-                <div className="border-t border-green-200 pt-4">
-                  <p className={`${fmyTheme.typography.label} text-green-700 mb-2`}>What Influenced It</p>
-                  <p className="text-slate-800">{icAnswers.q2}</p>
-                </div>
-              </div>
-              {icTags.length > 0 && (
-                <div className="bg-indigo-50 border-l-4 border-indigo-600 p-5 rounded-lg">
-                  <p className="text-sm font-semibold text-indigo-900 uppercase mb-3">🔍 Patterns Detected</p>
-                  <div className="flex flex-wrap gap-2">
-                    {icTags.map((tag) => (
-                      <span key={tag} className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${icTagColors[tag] || 'bg-slate-100 text-slate-800'}`}>#{tag}</span>
-                    ))}
-                  </div>
+
+              {/* Loading State */}
+              {qc5Status === 'loading' && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
+                  <p className="text-slate-600">Generating clarity...</p>
                 </div>
               )}
+
+              {/* QC-5 Results (Happy Path) */}
+              {showQc5Results && (
+                <>
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 space-y-4">
+                    <div>
+                      <p className={`${fmyTheme.typography.label} text-green-700 mb-1`}>Your distilled choice</p>
+                      <p className="text-lg font-bold text-slate-900">{qc5Results.distilled_choice}</p>
+                    </div>
+                    <div className="border-t border-green-200 pt-4">
+                      <p className={`${fmyTheme.typography.label} text-green-700 mb-2`}>What influenced it</p>
+                      <p className="text-slate-800">{qc5Results.what_influenced_it}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-6 space-y-4">
+                    <div>
+                      <p className={`${fmyTheme.typography.label} text-purple-700 mb-2`}>The instinctual pull</p>
+                      <p className="text-slate-800">{qc5Results.instinctual_pull}</p>
+                    </div>
+                    <div className="border-t border-purple-200 pt-4">
+                      <p className={`${fmyTheme.typography.label} text-purple-700 mb-2`}>What this says about this moment</p>
+                      <p className="text-slate-800">{qc5Results.what_this_says_about_this_moment}</p>
+                    </div>
+                  </div>
+
+                  {(qc5Results.reframe_want || qc5Results.reframe_need) && (
+                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 space-y-4">
+                      <p className={`${fmyTheme.typography.label} text-amber-700 mb-3`}>Reframe this choice</p>
+                      {qc5Results.reframe_want && (
+                        <div>
+                          <p className="text-sm font-semibold text-amber-800 mb-1">Want lens</p>
+                          <p className="text-slate-800">{qc5Results.reframe_want}</p>
+                        </div>
+                      )}
+                      {qc5Results.reframe_need && (
+                        <div className={qc5Results.reframe_want ? 'border-t border-amber-200 pt-4' : ''}>
+                          <p className="text-sm font-semibold text-amber-800 mb-1">Need lens</p>
+                          <p className="text-slate-800">{qc5Results.reframe_need}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Optional footer nudge */}
+                  <div className="text-center pt-2">
+                    <p className="text-xs text-slate-500 italic">
+                      Want to explore why this pattern shows up? Deep-Dive Mode can walk you through it.
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {/* Fail-Soft Echo (Error State) */}
+              {showFailSoft && (
+                <>
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 space-y-4">
+                    <div>
+                      <p className={`${fmyTheme.typography.label} text-green-700 mb-1`}>Your distilled choice</p>
+                      <p className="text-lg font-bold text-slate-900">{icAnswers.q3}</p>
+                    </div>
+                    <div className="border-t border-green-200 pt-4">
+                      <p className={`${fmyTheme.typography.label} text-green-700 mb-2`}>What influenced it</p>
+                      <p className="text-slate-800">{icAnswers.q2}</p>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-300 rounded-xl p-4">
+                    <p className="text-sm text-slate-500 italic">Quick insight unavailable right now.</p>
+                  </div>
+                </>
+              )}
+
               <div className="flex flex-col items-center gap-3 pt-2">
                 {icSaved && <p className="text-sm text-slate-600">Saved to log.</p>}
                 <button onClick={icHandleReset} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
