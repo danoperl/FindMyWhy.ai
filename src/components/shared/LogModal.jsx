@@ -65,6 +65,32 @@ export default function LogModal({ isOpen, onClose }) {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
+  // Safely render any value (string, number, object, array) as text
+  function renderValue(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+
+    // arrays: stringify each element safely
+    if (Array.isArray(v)) {
+      return v.map(renderValue).filter(Boolean).join(', ');
+    }
+
+    // objects: prefer common fields, else JSON stringify
+    if (typeof v === 'object') {
+      if (typeof v.text === 'string') return v.text;
+      if (typeof v.label === 'string') return v.label;
+      if (typeof v.name === 'string') return v.name;
+      // Handle meta objects like {source, model}
+      if (v.source || v.model) {
+        try { return JSON.stringify(v); } catch { return '[object]'; }
+      }
+      try { return JSON.stringify(v); } catch { return '[object]'; }
+    }
+
+    return String(v);
+  }
+
   if (!isOpen) return null;
 
   return (
@@ -160,7 +186,10 @@ export default function LogModal({ isOpen, onClose }) {
                 Back to list
               </button>
 
-              <div className="space-y-4">
+              {(() => {
+                try {
+                  return (
+                    <div className="space-y-4">
                 {/* Header Info */}
                 <div className="border-b border-slate-200 pb-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -183,10 +212,10 @@ export default function LogModal({ isOpen, onClose }) {
                     )}
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-1">
-                    {selectedEntry.title || 'Untitled'}
+                    {renderValue(selectedEntry.title) || 'Untitled'}
                   </h3>
                   <p className="text-sm text-slate-700 italic">
-                    "{selectedEntry.question}"
+                    "{renderValue(selectedEntry.question)}"
                   </p>
                 </div>
 
@@ -202,7 +231,7 @@ export default function LogModal({ isOpen, onClose }) {
                           key={i}
                           className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-full"
                         >
-                          #{tag}
+                          #{renderValue(tag)}
                         </span>
                       ))}
                     </div>
@@ -216,7 +245,7 @@ export default function LogModal({ isOpen, onClose }) {
                       Domains
                     </p>
                     <p className="text-sm text-slate-700">
-                      {selectedEntry.domains.join(', ')}
+                      {selectedEntry.domains.map(renderValue).join(', ')}
                     </p>
                   </div>
                 )}
@@ -233,25 +262,25 @@ export default function LogModal({ isOpen, onClose }) {
                           {selectedEntry.qcInputs.qc1 && (
                             <p>
                               <span className="font-medium">QC1:</span>{' '}
-                              {selectedEntry.qcInputs.qc1}
+                              {renderValue(selectedEntry.qcInputs.qc1)}
                             </p>
                           )}
                           {selectedEntry.qcInputs.qc2 && (
                             <p>
                               <span className="font-medium">QC2:</span>{' '}
-                              {selectedEntry.qcInputs.qc2}
+                              {renderValue(selectedEntry.qcInputs.qc2)}
                             </p>
                           )}
                           {selectedEntry.qcInputs.qc3 && (
                             <p>
                               <span className="font-medium">QC3:</span>{' '}
-                              {selectedEntry.qcInputs.qc3}
+                              {renderValue(selectedEntry.qcInputs.qc3)}
                             </p>
                           )}
                           {selectedEntry.qcInputs.qc4 && (
                             <p>
                               <span className="font-medium">QC4:</span>{' '}
-                              {selectedEntry.qcInputs.qc4}
+                              {renderValue(selectedEntry.qcInputs.qc4)}
                             </p>
                           )}
                         </div>
@@ -268,7 +297,7 @@ export default function LogModal({ isOpen, onClose }) {
                             value && (
                               <p key={key}>
                                 <span className="font-medium">{key.replace(/_/g, ' ')}:</span>{' '}
-                                {value}
+                                {renderValue(value)}
                               </p>
                             )
                           ))}
@@ -287,7 +316,7 @@ export default function LogModal({ isOpen, onClose }) {
                               key={i}
                               className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-full"
                             >
-                              #{signal}
+                              #{renderValue(signal)}
                             </span>
                           ))}
                         </div>
@@ -299,7 +328,7 @@ export default function LogModal({ isOpen, onClose }) {
                         <p className="text-xs font-semibold text-slate-500 uppercase mb-2">
                           Tension
                         </p>
-                        <p className="text-sm text-slate-700">{selectedEntry.qcTension}</p>
+                        <p className="text-sm text-slate-700">{renderValue(selectedEntry.qcTension)}</p>
                       </div>
                     )}
                   </div>
@@ -317,7 +346,7 @@ export default function LogModal({ isOpen, onClose }) {
                           {selectedEntry.whyChain.map((why, i) => (
                             <li key={i} className="flex gap-2">
                               <span className="text-slate-400">{i + 1}.</span>
-                              <span>{why}</span>
+                              <span>{renderValue(why)}</span>
                             </li>
                           ))}
                         </ol>
@@ -332,20 +361,7 @@ export default function LogModal({ isOpen, onClose }) {
                         <div className="space-y-2">
                           {selectedEntry.dm4Patterns.map((pattern, i) => (
                             <div key={i} className="text-sm text-slate-700">
-                              {typeof pattern === 'string' ? (
-                                <p>• {pattern}</p>
-                              ) : pattern && pattern.label ? (
-                                <p>
-                                  • {pattern.label}
-                                  {pattern.strength && (
-                                    <span className="text-slate-500 ml-2">
-                                      ({pattern.strength})
-                                    </span>
-                                  )}
-                                </p>
-                              ) : (
-                                <p>• {JSON.stringify(pattern)}</p>
-                              )}
+                              <p>• {renderValue(pattern)}</p>
                             </div>
                           ))}
                         </div>
@@ -358,7 +374,7 @@ export default function LogModal({ isOpen, onClose }) {
                           Insight (DM5)
                         </p>
                         <div className="bg-indigo-50 rounded-lg p-3 text-sm text-slate-800 whitespace-pre-wrap">
-                          {selectedEntry.dm5InsightText}
+                          {renderValue(selectedEntry.dm5InsightText)}
                         </div>
                       </div>
                     )}
@@ -369,7 +385,7 @@ export default function LogModal({ isOpen, onClose }) {
                           Clarity Snapshot (DM6)
                         </p>
                         <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-700 whitespace-pre-wrap font-mono">
-                          {selectedEntry.claritySnapshotText}
+                          {renderValue(selectedEntry.claritySnapshotText)}
                         </div>
                       </div>
                     )}
@@ -451,7 +467,19 @@ export default function LogModal({ isOpen, onClose }) {
                     </div>
                   </div>
                 )}
-              </div>
+                    </div>
+                  );
+                } catch (error) {
+                  console.error('[LogModal] Error rendering detail view:', error);
+                  return (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-slate-600">
+                        This entry couldn't be displayed.
+                      </p>
+                    </div>
+                  );
+                }
+              })()}
             </div>
           )}
         </div>
