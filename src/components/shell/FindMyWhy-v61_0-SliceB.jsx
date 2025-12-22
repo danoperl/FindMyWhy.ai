@@ -7,6 +7,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, RotateCcw, HelpCircle, CheckCircle, AlertCircle, Clipboard, Check, BookOpen } from 'lucide-react';
 import HomeScreen from "../home/HomeScreen.jsx";
 import { BackToHomePill } from "../ui";
+import LogModal from "../shared/LogModal.jsx";
+import { saveLogEntry, getLogEntries } from "../../lib/logbook.js";
 
 // =============================================================================
 // FLOW CONFIG (Slice A)
@@ -463,23 +465,6 @@ function formatArtifactForClipboard(artifact) {
 }
 
 function ClarityArtifactPanel({ artifact, dm5OutputText, holdLightlyText, patterns }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    const artifactWithExtras = {
-      ...artifact,
-      dm5OutputText,
-      holdLightlyText,
-      patterns,
-    };
-    console.log({ holdLightlyText, patterns, artifactHold: artifact.holdLightlyText, artifactPatterns: artifact.patterns, artifactWithExtras });
-    const text = formatArtifactForClipboard(artifactWithExtras);
-    console.log('Formatted text length:', text.length, 'First 500 chars:', text.substring(0, 500));
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5 space-y-4">
       <div className="flex items-center gap-2">
@@ -525,18 +510,6 @@ function ClarityArtifactPanel({ artifact, dm5OutputText, holdLightlyText, patter
           </div>
         </div>
       )}
-      
-      <button
-        onClick={handleCopy}
-        className={`w-full mt-2 px-4 py-2.5 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all ${
-          copied 
-            ? 'bg-green-100 text-green-700 border border-green-200' 
-            : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
-        }`}
-      >
-        {copied ? <Check size={16} /> : <Clipboard size={16} />}
-        {copied ? 'Copied!' : 'Copy snapshot'}
-      </button>
     </div>
   );
 }
@@ -759,8 +732,19 @@ export default function FindMyWhyApp() {
   const [qc5Results, setQc5Results] = useState(null); // { distilled_choice, what_influenced_it, instinctual_pull, what_this_says_about_this_moment, reframe_want, reframe_need }
   const [qc5Error, setQc5Error] = useState('');
   
+  // Logbook state
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [qcSaved, setQcSaved] = useState(false);
+  const [dmSaved, setDmSaved] = useState(false);
+  const [logCount, setLogCount] = useState(0);
+  
   const contentRef = useRef(null);
   const MAX_DEPTH = 5;
+
+  // Initialize log count on mount
+  useEffect(() => {
+    setLogCount(getLogEntries().length);
+  }, []);
 
   const resetDM = () => {
     setCurrentStep(0);
@@ -779,6 +763,7 @@ export default function FindMyWhyApp() {
     setRefineUsed(false);
     setEntryContext('normal');
     setWhyCountError('');
+    setDmSaved(false);
   };
 
   useEffect(() => {
@@ -1108,6 +1093,7 @@ export default function FindMyWhyApp() {
     setIcAnswers({ initial: '', q1: '', q2: '', q3: '' });
     setIcTags([]);
     setIcSaved(false);
+    setQcSaved(false);
     setQc5Status('idle');
     setQc5Results(null);
     setQc5Error('');
@@ -1120,11 +1106,158 @@ export default function FindMyWhyApp() {
     setScreen("DM");
   };
 
+  // Save QC entry to logbook
+  const handleSaveQcToLog = () => {
+    // Extract pattern tags and tension
+    const patternTags = extractQcPatternTags(
+      icAnswers.q1,
+      icAnswers.q2,
+      icAnswers.q3,
+      qc5Results
+    );
+    const tension = detectQcTension(
+      icAnswers.q1,
+      icAnswers.q3,
+      qc5Results
+    );
+
+    // Determine fail-soft status
+    const failSoft = qc5Status === 'error' || (qc5Status === 'idle' && qc5Results === null);
+
+    // Build excerpt from distilled_choice or first available output
+    let excerpt = '';
+    if (qc5Results?.distilled_choice) {
+      excerpt = qc5Results.distilled_choice.substring(0, 120);
+    } else if (qc5Results?.what_influenced_it) {
+      excerpt = qc5Results.what_influenced_it.substring(0, 120);
+    } else if (icAnswers.q3) {
+      excerpt = icAnswers.q3.substring(0, 120);
+    }
+
+    // Derive title from question (first 6-10 words)
+    const questionWords = icAnswers.initial.split(/\s+/).slice(0, 10);
+    const title = questionWords.join(' ') + (icAnswers.initial.split(/\s+/).length > 10 ? '…' : '');
+
+    const logEntry = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `qc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date().toISOString(),
+      mode: 'QC',
+      question: icAnswers.initial,
+      title: title,
+      tags: patternTags,
+      excerpt: excerpt,
+      failSoft: failSoft,
+      qcInputs: {
+        qc1: icAnswers.initial,
+        qc2: icAnswers.q1,
+        qc3: icAnswers.q2,
+        qc4: icAnswers.q3,
+      },
+      qcOutputs: qc5Results || {},
+      qcSignals: patternTags,
+      qcTension: tension?.detected ? tension.description : null,
+    };
+
+    if (saveLogEntry(logEntry)) {
+      setQcSaved(true);
+      setLogCount(getLogEntries().length);
+      setTimeout(() => setQcSaved(false), 3000);
+    }
+  };
+
+  // Save DM entry to logbook
+  const handleSaveDmToLog = () => {
+    // Get clarity snapshot text
+    const clarityArtifact = deriveClarityArtifact(whyChain, patterns, [{ text: insight }], surfaceQuestion);
+    const holdLightlyText = patterns.length > 0 
+      ? `For now, it might be enough just to notice that this question keeps circling around ${patterns[0].label.toLowerCase()}.`
+      : 'For now, the main step was simply putting this question into words.';
+    
+    const artifactWithExtras = {
+      ...clarityArtifact,
+      dm5OutputText,
+      holdLightlyText,
+      patterns,
+    };
+    
+    // Use the same formatArtifactForClipboard function to get snapshot text
+    const claritySnapshotText = formatArtifactForClipboard(artifactWithExtras);
+
+    // Determine fail-soft status (DM5 failed or used fallback)
+    const failSoft = dm5Status === 'error' || (dm5Status === 'idle' && !dm5OutputText) || 
+                     (dm5OutputText && dm5OutputText.includes('unavailable right now'));
+
+    // Build excerpt from insight or snapshot
+    let excerpt = '';
+    if (dm5OutputText) {
+      excerpt = dm5OutputText.substring(0, 120);
+    } else if (claritySnapshotText) {
+      excerpt = claritySnapshotText.substring(0, 120);
+    } else if (whyChain.length > 0) {
+      excerpt = whyChain[0].whyText.substring(0, 120);
+    }
+
+    // Derive title from question
+    const questionWords = surfaceQuestion.split(/\s+/).slice(0, 10);
+    const title = questionWords.join(' ') + (surfaceQuestion.split(/\s+/).length > 10 ? '…' : '');
+
+    // Extract domains (handle "other:specify" format)
+    const domains = domainsSelected.map(d => {
+      if (d === 'other' && otherSpecify && otherSpecify.trim()) {
+        return `other:${otherSpecify.trim()}`;
+      }
+      return d;
+    });
+
+    // Convert patterns to array format (extract labels if objects)
+    const dm4Patterns = patterns.map(p => {
+      if (typeof p === 'string') return p;
+      if (p && p.label) return p.label;
+      return JSON.stringify(p);
+    });
+
+    // Extract whyChain as string array
+    const whyChainTexts = whyChain.map(w => w.whyText);
+
+    const logEntry = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `dm-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date().toISOString(),
+      mode: 'DM',
+      question: surfaceQuestion,
+      title: title,
+      tags: [],
+      excerpt: excerpt,
+      failSoft: failSoft,
+      whyChain: whyChainTexts,
+      dm4Patterns: dm4Patterns,
+      dm5InsightText: dm5OutputText || '',
+      claritySnapshotText: claritySnapshotText,
+      domains: domains,
+    };
+
+    if (saveLogEntry(logEntry)) {
+      setDmSaved(true);
+      setLogCount(getLogEntries().length);
+      setTimeout(() => setDmSaved(false), 3000);
+    }
+  };
+
+  // Handler for opening log modal (refreshes count)
+  const handleOpenLogModal = () => {
+    setLogCount(getLogEntries().length);
+    setShowLogModal(true);
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Screen Body Assignment
+  // ─────────────────────────────────────────────────────────────────────────────
+  let screenBody = null;
+
   // ─────────────────────────────────────────────────────────────────────────────
   // HOME - Entry Hatch
   // ─────────────────────────────────────────────────────────────────────────────
   if (screen === "HOME") {
-    return (
+    screenBody = (
       <HomeScreen
         onQuickClarity={() => setScreen("IC")}
         onDeeperMeaning={() => {
@@ -1141,14 +1274,23 @@ export default function FindMyWhyApp() {
   if (screen === "IC") {
     // IC Input stage
     if (icStage === 'input') {
-      return (
+      screenBody = (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
           <style>{`
             @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
             .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
           `}</style>
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
-            <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
+            <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+              <button
+                onClick={handleOpenLogModal}
+                className="inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer gap-1.5"
+              >
+                <BookOpen size={14} />
+                View Log{logCount > 0 ? ` (${logCount})` : ''}
+              </button>
+              <BackToHomePill onClick={() => setScreen("HOME")} />
+            </div>
             <FmyCard>
               <div className="mb-6">
                 <button onClick={() => setIcShowTooltip(!icShowTooltip)} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold text-sm transition-colors">
@@ -1185,7 +1327,7 @@ export default function FindMyWhyApp() {
       const progress = qNum === 1 ? '33%' : qNum === 2 ? '66%' : '100%';
       const questions = { q1: "What's the real choice you're deciding between?", q2: "What's influencing this decision right now?", q3: "If you had to choose right now, what would you pick?" };
       const placeholders = { q1: "e.g., 'Stay in vs. go out'", q2: "e.g., 'I'm tired but I also feel like I should be productive'", q3: "e.g., 'Stay in'" };
-      return (
+      screenBody = (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
           <style>{`
             @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -1227,14 +1369,23 @@ export default function FindMyWhyApp() {
       // Show fail-soft if: error occurred, or we're idle without results (API call failed or never happened)
       const showFailSoft = qc5Status === 'error' || (qc5Status === 'idle' && qc5Results === null);
 
-      return (
+      screenBody = (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
           <style>{`
             @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
             .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
           `}</style>
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
-            <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
+            <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+              <button
+                onClick={handleOpenLogModal}
+                className="inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer gap-1.5"
+              >
+                <BookOpen size={14} />
+                View Log{logCount > 0 ? ` (${logCount})` : ''}
+              </button>
+              <BackToHomePill onClick={() => setScreen("HOME")} />
+            </div>
             <FmyCard className="space-y-6">
               <h2 className={fmyTheme.typography.heading}>💡 Here's what we learned</h2>
               
@@ -1411,10 +1562,24 @@ export default function FindMyWhyApp() {
               )}
 
               <div className="flex flex-col items-center gap-3 pt-2">
-                {icSaved && <p className="text-sm text-slate-600">Saved to log.</p>}
-                <button onClick={icHandleReset} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
-                  <RotateCcw size={18} /><span>Start Another Decision</span>
-                </button>
+                {qcSaved && <p className="text-sm text-green-600 font-medium">✓ Saved to log</p>}
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={handleSaveQcToLog}
+                    disabled={qcSaved}
+                    className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors ${
+                      qcSaved
+                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                    }`}
+                  >
+                    <BookOpen size={16} />
+                    {qcSaved ? 'Saved' : 'Save to Log'}
+                  </button>
+                  <button onClick={icHandleReset} className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+                    <RotateCcw size={18} /><span>Start Another Decision</span>
+                  </button>
+                </div>
               </div>
             </FmyCard>
           </div>
@@ -1422,7 +1587,9 @@ export default function FindMyWhyApp() {
       );
     }
 
-    return null;
+    if (!screenBody) {
+      screenBody = <div>Error: Unknown IC stage</div>;
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -1433,7 +1600,7 @@ export default function FindMyWhyApp() {
     // DM0 - Entry
     // ─────────────────────────────────────────────────────────────────────────────
     if (currentStep === 0) {
-    return (
+    screenBody = (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`
           @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -1513,7 +1680,7 @@ export default function FindMyWhyApp() {
   // DM1 - Surface Mapping
   // ─────────────────────────────────────────────────────────────────────────────
   if (currentStep === 1) {
-    return (
+    screenBody = (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <div ref={contentRef} className="max-w-2xl mx-auto">
@@ -1647,7 +1814,7 @@ export default function FindMyWhyApp() {
       },
     ];
     
-    return (
+    screenBody = (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <div ref={contentRef} className="max-w-2xl mx-auto">
@@ -1695,7 +1862,7 @@ export default function FindMyWhyApp() {
   // DM3 - WHY Chain
   // ─────────────────────────────────────────────────────────────────────────────
   if (currentStep === 3) {
-    return (
+    screenBody = (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <div ref={contentRef} className="max-w-2xl mx-auto">
@@ -1816,7 +1983,7 @@ export default function FindMyWhyApp() {
   // DM4 - Pattern Recognition
   // ─────────────────────────────────────────────────────────────────────────────
   if (currentStep === 4) {
-    return (
+    screenBody = (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <div ref={contentRef} className="max-w-2xl mx-auto">
@@ -1883,7 +2050,7 @@ export default function FindMyWhyApp() {
   // DM5 - Insight
   // ─────────────────────────────────────────────────────────────────────────────
   if (currentStep === 5) {
-    return (
+    screenBody = (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <div ref={contentRef} className="max-w-2xl mx-auto">
@@ -1966,11 +2133,20 @@ export default function FindMyWhyApp() {
       ? `For now, it might be enough just to notice that this question keeps circling around ${patterns[0].label.toLowerCase()}.`
       : 'For now, the main step was simply putting this question into words.';
     
-    return (
+    screenBody = (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
-          <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
+          <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+            <button
+              onClick={handleOpenLogModal}
+              className="inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-white hover:text-slate-700 transition cursor-pointer gap-1.5"
+            >
+              <BookOpen size={14} />
+              View Log{logCount > 0 ? ` (${logCount})` : ''}
+            </button>
+            <BackToHomePill onClick={() => setScreen("HOME")} />
+          </div>
           <FmyCard>
             <PipelineStrip currentStep={currentStep} />
             <FmyCardDivider />
@@ -2016,10 +2192,25 @@ export default function FindMyWhyApp() {
           </FmyCard>
           
           {/* Exit Actions */}
-          <div className="flex justify-center">
-            <button onClick={handleReset} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg flex items-center gap-2">
-              <RotateCcw size={18} /> Start New
-            </button>
+          <div className="flex flex-col items-center gap-3">
+            {dmSaved && <p className="text-sm text-green-600 font-medium">✓ Saved to log</p>}
+            <div className="flex gap-3">
+              <button
+                onClick={handleSaveDmToLog}
+                disabled={dmSaved}
+                className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${
+                  dmSaved
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                }`}
+              >
+                <BookOpen size={16} />
+                {dmSaved ? 'Saved' : 'Save to Log'}
+              </button>
+              <button onClick={handleReset} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg flex items-center gap-2">
+                <RotateCcw size={18} /> Start New
+              </button>
+            </div>
           </div>
           
           <p className="text-center text-xs text-slate-500">
@@ -2031,5 +2222,13 @@ export default function FindMyWhyApp() {
     }
   }
 
-  return null;
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Single Return with LogModal
+  // ─────────────────────────────────────────────────────────────────────────────
+  return (
+    <>
+      {screenBody}
+      <LogModal isOpen={showLogModal} onClose={() => setShowLogModal(false)} />
+    </>
+  );
 }
