@@ -148,14 +148,9 @@ export default function LogModal({ isOpen, onClose }) {
                           </span>
                         </div>
                       </div>
-                      <p className="text-sm font-medium text-slate-900 mb-1">
-                        {entry.title || truncate(entry.question, 50)}
+                      <p className="text-sm font-medium text-slate-900 mb-1 whitespace-normal break-words">
+                        {entry.title || entry.question}
                       </p>
-                      {entry.excerpt && (
-                        <p className="text-xs text-slate-600 line-clamp-2">
-                          {entry.excerpt}
-                        </p>
-                      )}
                       {entry.tags && entry.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {entry.tags.slice(0, 3).map((tag, i) => (
@@ -211,12 +206,9 @@ export default function LogModal({ isOpen, onClose }) {
                       </span>
                     )}
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-1">
-                    {renderValue(selectedEntry.title) || 'Untitled'}
+                  <h3 className="text-lg font-semibold text-slate-900 mb-1 whitespace-normal break-words">
+                    {renderValue(selectedEntry.question) || renderValue(selectedEntry.title) || 'Untitled'}
                   </h3>
-                  <p className="text-sm text-slate-700 italic">
-                    "{renderValue(selectedEntry.question)}"
-                  </p>
                 </div>
 
                 {/* Tags */}
@@ -384,7 +376,7 @@ export default function LogModal({ isOpen, onClose }) {
                         <p className="text-xs font-semibold text-slate-500 uppercase mb-2">
                           Clarity Snapshot (DM6)
                         </p>
-                        <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-700 whitespace-pre-wrap font-mono">
+                        <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
                           {renderValue(selectedEntry.claritySnapshotText)}
                         </div>
                       </div>
@@ -393,11 +385,11 @@ export default function LogModal({ isOpen, onClose }) {
                 )}
 
                 {/* Actions */}
-                <div className="border-t border-slate-200 pt-4 space-y-2">
-                  <div className="flex gap-2">
+                <div className="border-t border-slate-200 pt-4">
+                  <div className="flex flex-wrap gap-2 justify-center">
                     <button
                       onClick={() => handleCopy(selectedEntry, 'markdown')}
-                      className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors ${
+                      className={`inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[140px] ${
                         copiedType === 'markdown'
                           ? 'bg-green-100 text-green-700 border border-green-200'
                           : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
@@ -411,13 +403,13 @@ export default function LogModal({ isOpen, onClose }) {
                       ) : (
                         <>
                           <Clipboard size={16} />
-                          Copy Markdown
+                          Copy as text
                         </>
                       )}
                     </button>
                     <button
                       onClick={() => handleCopy(selectedEntry, 'json')}
-                      className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors ${
+                      className={`inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[140px] ${
                         copiedType === 'json'
                           ? 'bg-green-100 text-green-700 border border-green-200'
                           : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50'
@@ -435,14 +427,14 @@ export default function LogModal({ isOpen, onClose }) {
                         </>
                       )}
                     </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[140px] bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+                    >
+                      <Trash2 size={16} />
+                      Delete Entry
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="w-full px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors"
-                  >
-                    <Trash2 size={16} />
-                    Delete Entry
-                  </button>
                 </div>
 
                 {/* Delete Confirmation */}
