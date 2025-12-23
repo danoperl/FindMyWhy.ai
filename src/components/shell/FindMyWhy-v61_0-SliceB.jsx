@@ -1248,6 +1248,27 @@ export default function FindMyWhyApp() {
     setShowLogModal(true);
   };
 
+  const handleAskAgain = (mode, question) => {
+    if (mode === "QC" || !mode) {
+      // Start IC flow with prefilled question
+      setIcDecision(question);
+      setIcStage('input');
+      setIcUserInput('');
+      setIcAnswers({ initial: '', q1: '', q2: '', q3: '' });
+      setIcTags([]);
+      setIcSaved(false);
+      setQc5Status('idle');
+      setQc5Results(null);
+      setQc5Error('');
+      setScreen("IC");
+    } else if (mode === "DM") {
+      // Start DM flow with prefilled question
+      resetDM();
+      setSurfaceQuestion(question);
+      setScreen("DM");
+    }
+  };
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Screen Body Assignment
   // ─────────────────────────────────────────────────────────────────────────────
@@ -2228,7 +2249,15 @@ export default function FindMyWhyApp() {
   return (
     <>
       {screenBody}
-      <LogModal isOpen={showLogModal} onClose={() => setShowLogModal(false)} />
+      <LogModal 
+        isOpen={showLogModal} 
+        onClose={() => setShowLogModal(false)}
+        onExitToHome={() => {
+          setShowLogModal(false);
+          setScreen("HOME");
+        }}
+        onAskAgain={handleAskAgain}
+      />
     </>
   );
 }

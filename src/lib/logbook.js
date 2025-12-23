@@ -34,7 +34,25 @@ function validateLogEntry(entry) {
 }
 
 /**
+ * Validate entry for reading (more lenient - allows missing mode, defaults to QC)
+ */
+function validateLogEntryForRead(entry) {
+  if (!entry || typeof entry !== 'object') return false;
+  if (!entry.id || typeof entry.id !== 'string') return false;
+  // createdAt is optional for backward compatibility, but preferred
+  if (entry.createdAt && typeof entry.createdAt !== 'string') return false;
+  // mode is optional - defaults to "QC" per v64.3 contract
+  if (entry.mode && entry.mode !== 'QC' && entry.mode !== 'DM') return false;
+  // question or title required
+  if (!entry.question && !entry.title) return false;
+  if (entry.question && typeof entry.question !== 'string') return false;
+  if (entry.title && typeof entry.title !== 'string') return false;
+  return true;
+}
+
+/**
  * Get all log entries, sorted newest-first
+ * Uses lenient validation for backward compatibility
  */
 export function getLogEntries() {
   try {
@@ -45,10 +63,11 @@ export function getLogEntries() {
     if (!Array.isArray(entries)) return [];
     
     // Filter out invalid entries and sort by createdAt (newest first)
-    const validEntries = entries.filter(validateLogEntry);
+    // Use lenient validation for reading
+    const validEntries = entries.filter(validateLogEntryForRead);
     return validEntries.sort((a, b) => {
-      const dateA = new Date(a.createdAt);
-      const dateB = new Date(b.createdAt);
+      const dateA = new Date(a.createdAt || a.timestamp || 0);
+      const dateB = new Date(b.createdAt || b.timestamp || 0);
       return dateB - dateA; // Descending (newest first)
     });
   } catch (error) {
@@ -104,6 +123,35 @@ export function deleteLogEntry(id) {
     return true;
   } catch (error) {
     console.error('[Logbook] Error deleting entry:', error);
+    return false;
+  }
+}
+
+/**
+ * Update an existing log entry (for tag editing)
+ * Only updates fields that are provided; preserves all other fields
+ */
+export function updateLogEntry(id, updates) {
+  try {
+    const entries = getLogEntries();
+    const index = entries.findIndex(e => e.id === id);
+    if (index === -1) {
+      console.warn('[Logbook] Entry not found for update:', id);
+      return false;
+    }
+    
+    // Merge updates into existing entry
+    const updated = { ...entries[index], ...updates };
+    
+    // Replace entry in array
+    const updatedEntries = [...entries];
+    updatedEntries[index] = updated;
+    
+    // Save back to localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
+    return true;
+  } catch (error) {
+    console.error('[Logbook] Error updating entry:', error);
     return false;
   }
 }
