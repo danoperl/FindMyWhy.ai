@@ -1610,7 +1610,7 @@ export default function FindMyWhyApp() {
           <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
           <div className="text-center mb-4">
             <h1 className="text-3xl font-bold text-slate-900">FindMyWhy.ai</h1>
-            <p className="text-sm text-slate-500 mt-1">v61.0 Slice B</p>
+            <p className="text-sm text-slate-500 mt-1">BETA | 2025</p>
           </div>
           
           <FmyCard>
