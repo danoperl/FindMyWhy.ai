@@ -20,12 +20,17 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
         {/* Logo + Header */}
         <div className="flex flex-col items-center space-y-3">
           <img src={fmyLogo} alt="FindMyWhy logo" className="h-16 w-auto" />
-          <h1 className="text-2xl font-bold text-slate-900">FindMyWhy</h1>
+          <h1 className="fmy-brand-logotype text-4xl font-bold text-slate-900">FindMyWhy?</h1>
         </div>
 
-        {/* What’s on your mind? Panel */}
-        <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 shadow-lg p-8 text-center">
-          <p className="text-2xl font-medium text-slate-800">What’s on your mind? <span className="text-4xl">🤔</span></p>
+        {/* What's on your mind? Panel */}
+        <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 shadow-lg p-8 text-center space-y-2">
+          <p className="fmy-entry-welcome font-manrope text-lg font-normal italic text-blue-600">
+            "This is where we begin"&nbsp;&nbsp;&nbsp;
+          </p>
+          <p className="fmy-entry-prompt font-manrope text-3xl font-medium text-slate-900 tracking-tight">
+            What's on your mind? <span className="text-4xl">🤔</span>
+          </p>
         </div>
 
         {/* Card */}
@@ -42,7 +47,7 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
           </div>
 
           {/* Flight Parameters */}
-          <ul className="text-sm text-slate-600 space-y-1">
+          <ul className="text-base text-slate-600 space-y-1">
             <li>• Not therapy</li>
             <li>• Not journaling</li>
             <li>• No right answers</li>

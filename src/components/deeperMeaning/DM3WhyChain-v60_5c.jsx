@@ -28,7 +28,7 @@ export default function DM3WhyChain_v60_5c() {
     <div className="space-y-4">
       {/* Section header */}
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold tracking-tight text-slate-100">
+        <h3 className="text-xl font-semibold tracking-tight text-slate-100">
           DM3 · Why Chain <span className="text-xs text-slate-400">v60.5c</span>
         </h3>
         <button

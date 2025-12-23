@@ -8,7 +8,7 @@ export default function DeeperMeaningApp_v60_4() {
     <div className="space-y-8">
       {/* Header */}
       <header className="space-y-2">
-        <h2 className="text-xl font-semibold tracking-tight">
+        <h2 className="text-3xl font-semibold tracking-tight">
           Deeper Meaning Mode
         </h2>
         <p className="text-sm text-slate-300">

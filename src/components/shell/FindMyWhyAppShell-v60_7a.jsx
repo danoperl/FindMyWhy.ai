@@ -217,7 +217,7 @@ function LogHistoryModal({ isOpen, onClose, icLog, dmLog }) {
         <div className="flex items-center justify-between p-5 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <BookOpen size={20} className="text-indigo-600" />
-            <h2 className="text-lg font-bold text-gray-900">Log History</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Log History</h2>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
             <X size={20} className="text-gray-500" />
@@ -324,7 +324,7 @@ function InstantClarityContent({ onSaveToLog }) {
       <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
         <div className="mb-6"><button onClick={() => setShowTooltip(!showTooltip)} className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors"><HelpCircle size={18} />What is Instant Clarity?</button>{showTooltip && (<div className="mt-3 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg text-sm text-gray-700 animate-fadeIn"><p>Instant Clarity is a quick, playful way to clarify everyday decisions. Answer 3 simple questions, and we'll help you see your own reasoning more clearly. <strong>It's not advice—just clarity.</strong></p></div>)}</div>
         <div className="border-b border-gray-200 my-6" />
-        <div className="space-y-5"><h2 className="text-xl font-bold text-gray-900">What's the small decision you're trying to make?</h2><input type="text" value={decision} onChange={(e) => setDecision(e.target.value)} placeholder="e.g., 'Should I work from home or the café today?'" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-900 transition-shadow" onKeyPress={(e) => e.key === 'Enter' && handleStartFlow()} /><div className="flex justify-center"><button onClick={handleStartFlow} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors"><span>Start Instant Clarity</span><ArrowRight size={18} /></button></div></div>
+        <div className="space-y-5"><h2 className="text-3xl font-bold text-gray-900">What's the small decision you're trying to make?</h2><input type="text" value={decision} onChange={(e) => setDecision(e.target.value)} placeholder="e.g., 'Should I work from home or the café today?'" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-900 transition-shadow" onKeyPress={(e) => e.key === 'Enter' && handleStartFlow()} /><div className="flex justify-center"><button onClick={handleStartFlow} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors"><span>Start Instant Clarity</span><ArrowRight size={18} /></button></div></div>
       </div>
     );
   }
@@ -338,7 +338,7 @@ function InstantClarityContent({ onSaveToLog }) {
       <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 animate-fadeIn">
         <div className="mb-6"><div className="flex items-center gap-3 text-sm text-gray-600"><span className="font-semibold">Question {qNum} of 3</span><div className="h-2 w-24 bg-gray-200 rounded-full overflow-hidden"><div className="h-full bg-indigo-600 rounded-full transition-all duration-300" style={{ width: progress }} /></div></div></div>
         <div className="border-b border-gray-200 my-6" />
-        <div className="space-y-5"><h2 className="text-lg font-bold text-gray-900">{questions[stage]}</h2><p className="text-sm text-gray-600">Your decision: <span className="font-semibold text-gray-900">{answers.initial}</span></p><input type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)} placeholder={placeholders[stage]} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-900 transition-shadow" onKeyPress={(e) => e.key === 'Enter' && handleAnswer(stage)} /><div className="flex gap-3"><button onClick={() => handleAnswer(stage)} className="flex-1 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-3 rounded-lg transition-colors">{stage === 'q3' ? 'See Clarity' : 'Continue'}</button><button onClick={handleReset} className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"><RotateCcw size={18} /></button></div></div>
+        <div className="space-y-5"><h2 className="text-2xl font-bold text-gray-900">{questions[stage]}</h2><p className="text-sm text-gray-600">Your decision: <span className="font-semibold text-gray-900">{answers.initial}</span></p><input type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)} placeholder={placeholders[stage]} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-900 transition-shadow" onKeyPress={(e) => e.key === 'Enter' && handleAnswer(stage)} /><div className="flex gap-3"><button onClick={() => handleAnswer(stage)} className="flex-1 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-3 rounded-lg transition-colors">{stage === 'q3' ? 'See Clarity' : 'Continue'}</button><button onClick={handleReset} className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"><RotateCcw size={18} /></button></div></div>
       </div>
     );
   }
@@ -346,7 +346,7 @@ function InstantClarityContent({ onSaveToLog }) {
   if (stage === 'results') {
     return (
       <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn">
-        <h2 className="text-2xl font-bold text-gray-900">💡 Here's what we learned</h2>
+        <h2 className="text-4xl font-bold text-gray-900">💡 Here's what we learned</h2>
         <div className="bg-white border-2 border-blue-200 rounded-lg p-5"><p className="text-xs font-semibold text-blue-700 uppercase mb-2">📌 Your Original Question</p><p className="text-base font-medium text-gray-900">{answers.initial}</p></div>
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-6 space-y-4"><div><p className="text-xs font-semibold text-green-700 uppercase mb-1">Your Distilled Choice</p><p className="text-lg font-bold text-gray-900">{answers.q3}</p></div><div className="border-t border-green-200 pt-4"><p className="text-xs font-semibold text-green-700 uppercase mb-2">What Influenced It</p><p className="text-gray-800">{answers.q2}</p></div></div>
         {tags.length > 0 && (<div className="bg-indigo-50 border-l-4 border-indigo-600 p-5 rounded-lg"><p className="text-sm font-semibold text-indigo-900 uppercase mb-3">🔍 Patterns Detected</p><div className="flex flex-wrap gap-2">{tags.map((tag) => (<span key={tag} className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${tagColors[tag] || 'bg-gray-100 text-gray-800'}`}>#{tag}</span>))}</div></div>)}
@@ -669,7 +669,7 @@ function DeeperMeaningContent({ onSaveToLog }) {
           <div className="border-b border-gray-200 my-6" />
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">What's the deeper question on your mind?</h2>
+              <h2 className="text-3xl font-bold text-gray-900">What's the deeper question on your mind?</h2>
               <p className="text-sm text-gray-600 mt-1">Share something you'd like to explore.</p>
             </div>
             <div className="relative">
@@ -727,7 +727,7 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM1</span>
-                <h2 className="text-xl font-bold text-gray-900">Surface Mapping</h2>
+                <h2 className="text-3xl font-bold text-gray-900">Surface Mapping</h2>
               </div>
               <p className="text-sm text-gray-600">We'll clarify what this question is really about.</p>
             </div>
@@ -780,7 +780,7 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM2</span>
-                <h2 className="text-xl font-bold text-gray-900">Anchor Detection</h2>
+                <h2 className="text-3xl font-bold text-gray-900">Anchor Detection</h2>
               </div>
               <p className="text-sm text-gray-600">We're looking for identity, values, and relational anchors.</p>
             </div>
@@ -863,7 +863,7 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM3</span>
-                <h2 className="text-xl font-bold text-gray-900">WHY-Chain Exploration</h2>
+                <h2 className="text-3xl font-bold text-gray-900">WHY-Chain Exploration</h2>
               </div>
               <p className="text-sm text-gray-600">We'll explore a few layers of "why" at your pace. You can stop anytime.</p>
             </div>
@@ -983,7 +983,7 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM4</span>
-                <h2 className="text-xl font-bold text-gray-900">Pattern Recognition</h2>
+                <h2 className="text-3xl font-bold text-gray-900">Pattern Recognition</h2>
               </div>
               <p className="text-sm text-gray-600">Here's a neutral look at some themes in what you wrote.</p>
             </div>
@@ -1090,7 +1090,7 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM5</span>
-                <h2 className="text-xl font-bold text-gray-900">Insight</h2>
+                <h2 className="text-3xl font-bold text-gray-900">Insight</h2>
               </div>
               <p className="text-sm text-gray-600">Here's a neutral look at the themes in your reflection.</p>
             </div>
@@ -1176,7 +1176,7 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM6</span>
-                <h2 className="text-xl font-bold text-gray-900">Closure</h2>
+                <h2 className="text-3xl font-bold text-gray-900">Closure</h2>
               </div>
               <p className="text-sm text-gray-600">A brief reflection on where you've landed for now.</p>
             </div>
@@ -1312,7 +1312,7 @@ export default function FindMyWhyAppShell() {
 
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">FindMyWhy.ai</h1>
+            <h1 className="text-5xl sm:text-6xl font-bold text-gray-900 mb-3">FindMyWhy.ai</h1>
             <div className="flex items-center gap-2">
               <button onClick={() => setActiveMode('instant_clarity')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${activeMode === 'instant_clarity' ? 'bg-indigo-600 text-white shadow-sm' : 'border border-indigo-300 text-indigo-600 bg-white hover:bg-indigo-50'}`}>Instant Clarity</button>
               <button onClick={() => setActiveMode('deeper_meaning')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${activeMode === 'deeper_meaning' ? 'bg-indigo-600 text-white shadow-sm' : 'border border-indigo-300 text-indigo-600 bg-white hover:bg-indigo-50'}`}>Deeper Meaning</button>

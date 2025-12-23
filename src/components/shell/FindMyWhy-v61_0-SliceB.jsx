@@ -48,8 +48,8 @@ const fmyTheme = {
     padding: 'p-6 md:p-8',
   },
   typography: {
-    heading: 'text-2xl font-semibold text-slate-900',
-    subheading: 'text-xl font-bold text-slate-900',
+    heading: 'text-4xl font-semibold text-slate-900 font-manrope',
+    subheading: 'text-3xl font-bold text-slate-900 font-manrope',
     caption: 'text-sm text-slate-600',
     label: 'text-xs font-semibold text-slate-500 uppercase tracking-wide',
   },
@@ -1630,7 +1630,7 @@ export default function FindMyWhyApp() {
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
           <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
           <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-slate-900">FindMyWhy.ai</h1>
+            <h1 className="text-5xl font-bold text-slate-900">FindMyWhy.ai</h1>
             <p className="text-sm text-slate-500 mt-1">BETA | 2025</p>
           </div>
           

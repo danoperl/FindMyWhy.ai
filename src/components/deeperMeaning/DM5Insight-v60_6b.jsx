@@ -15,7 +15,7 @@ export default function DM5Insight_v60_6b() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <h3 className="text-sm font-semibold tracking-tight text-slate-100">
+      <h3 className="text-xl font-semibold tracking-tight text-slate-100">
         DM5 · Insight{" "}
         <span className="text-xs text-slate-400">v60.6b</span>
       </h3>

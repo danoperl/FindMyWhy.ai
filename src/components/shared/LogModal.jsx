@@ -202,7 +202,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-xl font-semibold text-slate-900">📘 Logbook</h2>
+          <h2 className="text-3xl font-semibold text-slate-900">📘 Logbook</h2>
           <button
             onClick={handleClose}
             className="p-1 hover:bg-slate-100 rounded transition-colors"
@@ -473,7 +473,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
               {/* Title line */}
               {(selectedEntry.question || selectedEntry.title) && (
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900 break-words mb-2">
+                  <h2 className="text-3xl font-semibold text-slate-900 break-words mb-2">
                     {selectedEntry.question || selectedEntry.title}
                   </h2>
                   {selectedEntry.question && selectedEntry.title && selectedEntry.question !== selectedEntry.title && (

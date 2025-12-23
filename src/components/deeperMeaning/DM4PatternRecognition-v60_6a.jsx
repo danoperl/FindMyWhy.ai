@@ -28,7 +28,7 @@ export default function DM4PatternRecognition_v60_6a() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <h3 className="text-sm font-semibold tracking-tight text-slate-100">
+      <h3 className="text-xl font-semibold tracking-tight text-slate-100">
         DM4 · Pattern Recognition{" "}
         <span className="text-xs text-slate-400">v60.6a</span>
       </h3>

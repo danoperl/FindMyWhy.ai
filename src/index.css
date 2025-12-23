@@ -1,7 +1,20 @@
 /* Tailwind v4: do not replace with @tailwind directives */
 @import "tailwindcss";
 
+/* Typography Contract v65.x: Source Sans 3 as global default */
 html, body, #root {
   height: 100%;
   background: linear-gradient(135deg, #eff6ff, #e0e7ff);
+  font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+}
+
+/* Manrope for structural hierarchy (h1, h2, h3) */
+h1, h2, h3 {
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+}
+
+/* Brand logotype font override (Entry Hatch only) */
+h1.fmy-brand-logotype,
+.fmy-brand-logotype {
+  font-family: Helvetica, Arial, sans-serif;
 }
