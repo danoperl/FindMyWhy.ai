@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import fmyLogo from '../../assets/fmy-logo-v2.svg';
 
+/*
+ Entry Hatch pattern markers:
+ - fmy-entry-welcome
+ - fmy-entry-prompt
+
+ These classes are semantic identifiers only.
+ Visual styling is handled via Tailwind utilities.
+*/
+
 export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDeeperMeaning }) {
   const [name, setName] = useState('');
   const [passcode, setPasscode] = useState('');

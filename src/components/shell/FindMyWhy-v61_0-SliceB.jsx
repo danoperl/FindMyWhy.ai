@@ -48,9 +48,9 @@ const fmyTheme = {
     padding: 'p-6 md:p-8',
   },
   typography: {
-    heading: 'text-4xl font-semibold text-slate-900 font-manrope',
+    heading: 'text-2xl font-semibold text-slate-900 font-manrope tracking-tight',
     subheading: 'text-3xl font-bold text-slate-900 font-manrope',
-    caption: 'text-sm text-slate-600',
+    caption: 'text-base text-slate-600',
     label: 'text-xs font-semibold text-slate-500 uppercase tracking-wide',
   },
 };
@@ -687,6 +687,64 @@ const EXAMPLE_PROMPTS = [
 ];
 
 // =============================================================================
+// QC EXAMPLE SETS (v65.2)
+// =============================================================================
+
+const QC_EXAMPLE_SETS = [
+  {
+    id: "A",
+    label: "Change vs Leave It Alone",
+    q0_seed: "What are you thinking about right now?",
+    like_by_step: {
+      Q0: "Like… do I want to change something or leave it alone.",
+      Q1: "Like… should I do something about it, or stick with how things are.",
+      Q2: "Like… I'm not sure it's worth it because it might take more time or energy.",
+      Q3: "Like… do I make a small change or let it stay the same."
+    }
+  },
+  {
+    id: "B",
+    label: "Free Time",
+    q0_seed: "I have some free time — how do I want to spend it?",
+    like_by_step: {
+      Q1: "Like… I have some free time and want to use it well.",
+      Q2: "Like… doing something active or just relaxing.",
+      Q3: "Like… not knowing what would feel best afterward."
+    }
+  },
+  {
+    id: "C",
+    label: "Food Choice",
+    q0_seed: "I want something good to eat — what should I have?",
+    like_by_step: {
+      Q1: "Like… I'm hungry and can't decide what sounds good.",
+      Q2: "Like… making something simple or getting something out.",
+      Q3: "Like… wanting something good without the hassle."
+    }
+  },
+  {
+    id: "D",
+    label: "Saying Yes or No",
+    q0_seed: "Somebody asked me to do something — should I do it or not?",
+    like_by_step: {
+      Q1: "Like… I was asked to do something and I'm unsure about it.",
+      Q2: "Like… saying yes or saying no.",
+      Q3: "Like… not wanting to disappoint them or overcommit."
+    }
+  },
+  {
+    id: "E",
+    label: "Easy vs Better",
+    q0_seed: "I need to choose between an easy option or the \"better\" one.",
+    like_by_step: {
+      Q1: "Like… the easy option is tempting, but the other one feels better.",
+      Q2: "Like… doing what's quicker or what's better.",
+      Q3: "Like… whether the extra effort is worth it."
+    }
+  }
+];
+
+// =============================================================================
 // MAIN APP
 // =============================================================================
 
@@ -732,6 +790,9 @@ export default function FindMyWhyApp() {
   const [qc5Results, setQc5Results] = useState(null); // { distilled_choice, what_influenced_it, instinctual_pull, what_this_says_about_this_moment, reframe_want, reframe_need }
   const [qc5Error, setQc5Error] = useState('');
   
+  // QC example set rotation (v65.2)
+  const [qcExampleSet, setQcExampleSet] = useState(null);
+  
   // Logbook state
   const [showLogModal, setShowLogModal] = useState(false);
   const [qcSaved, setQcSaved] = useState(false);
@@ -745,6 +806,26 @@ export default function FindMyWhyApp() {
   useEffect(() => {
     setLogCount(getLogEntries().length);
   }, []);
+
+  // QC example set rotation (v65.2) - select and persist set on QC entry
+  useEffect(() => {
+    if (screen === "IC" && icStage === 'input') {
+      const KEY = "fmy_qc_example_set_id";
+      const stored = sessionStorage.getItem(KEY);
+      
+      // Check if stored ID matches a valid set
+      const storedSet = QC_EXAMPLE_SETS.find(set => set.id === stored);
+      
+      if (storedSet) {
+        setQcExampleSet(storedSet);
+      } else {
+        // Pick a random set
+        const randomSet = QC_EXAMPLE_SETS[Math.floor(Math.random() * QC_EXAMPLE_SETS.length)];
+        sessionStorage.setItem(KEY, randomSet.id);
+        setQcExampleSet(randomSet);
+      }
+    }
+  }, [screen, icStage]);
 
   const resetDM = () => {
     setCurrentStep(0);
@@ -1300,6 +1381,7 @@ export default function FindMyWhyApp() {
           <style>{`
             @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
             .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
+            .qc-placeholder-input::placeholder { font-style: italic; }
           `}</style>
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
             <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
@@ -1329,10 +1411,10 @@ export default function FindMyWhyApp() {
                   <h2 className={fmyTheme.typography.heading}>What's the small decision you're trying to make?</h2>
                   <p className={`${fmyTheme.typography.caption} mt-1 max-w-xl`}>Share something you'd like quick clarity on.</p>
                 </div>
-                <input type="text" value={icDecision} onChange={(e) => setIcDecision(e.target.value)} placeholder="e.g., 'Should I work from home or the café today?'" className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-900 transition-shadow" onKeyPress={(e) => e.key === 'Enter' && icHandleStartFlow()} />
+                <input type="text" value={icDecision} onChange={(e) => setIcDecision(e.target.value)} placeholder={qcExampleSet?.like_by_step?.Q0 || (qcExampleSet?.q0_seed ? `Like… ${qcExampleSet.q0_seed}` : '')} className="qc-placeholder-input w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-900 transition-shadow" onKeyPress={(e) => e.key === 'Enter' && icHandleStartFlow()} />
                 <div className="flex justify-center">
                   <button onClick={icHandleStartFlow} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
-                    <span>Start Instant Clarity</span><ArrowRight size={18} />
+                    Start Instant Clarity
                   </button>
                 </div>
               </div>
@@ -1347,12 +1429,12 @@ export default function FindMyWhyApp() {
       const qNum = icStage === 'q1' ? 1 : icStage === 'q2' ? 2 : 3;
       const progress = qNum === 1 ? '33%' : qNum === 2 ? '66%' : '100%';
       const questions = { q1: "What's the real choice you're deciding between?", q2: "What's influencing this decision right now?", q3: "If you had to choose right now, what would you pick?" };
-      const placeholders = { q1: "e.g., 'Stay in vs. go out'", q2: "e.g., 'I'm tired but I also feel like I should be productive'", q3: "e.g., 'Stay in'" };
       screenBody = (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6">
           <style>{`
             @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
             .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
+            .qc-placeholder-input::placeholder { font-style: italic; }
           `}</style>
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
             <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
@@ -1367,14 +1449,16 @@ export default function FindMyWhyApp() {
               </div>
               <FmyCardDivider />
               <div className="space-y-5">
-                <h2 className={fmyTheme.typography.subheading}>{questions[icStage]}</h2>
-                <p className="text-sm text-slate-600">Your decision: <span className="font-semibold text-slate-900">{icAnswers.initial}</span></p>
-                <input type="text" value={icUserInput} onChange={(e) => setIcUserInput(e.target.value)} placeholder={placeholders[icStage]} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-900 transition-shadow" onKeyPress={(e) => e.key === 'Enter' && icHandleAnswer(icStage)} />
-                <div className="flex gap-3">
-                  <button onClick={() => icHandleAnswer(icStage)} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-sm">
+                <h2 className={fmyTheme.typography.heading}>{questions[icStage]}</h2>
+                <p className={fmyTheme.typography.caption}>Your decision: <span className="font-semibold text-slate-900">{icAnswers.initial}</span></p>
+                <input type="text" value={icUserInput} onChange={(e) => setIcUserInput(e.target.value)} placeholder={qcExampleSet?.like_by_step?.[icStage.toUpperCase()] || ''} className="qc-placeholder-input w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-900 transition-shadow" onKeyPress={(e) => e.key === 'Enter' && icHandleAnswer(icStage)} />
+                <div className="flex justify-center gap-3">
+                  <button onClick={() => icHandleAnswer(icStage)} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
                     {icStage === 'q3' ? 'See Clarity' : 'Continue'}
                   </button>
-                  <button onClick={icHandleReset} className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors"><RotateCcw size={18} /></button>
+                  <button onClick={icHandleReset} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+                    Start Over
+                  </button>
                 </div>
               </div>
             </FmyCard>
@@ -1395,6 +1479,7 @@ export default function FindMyWhyApp() {
           <style>{`
             @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
             .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
+            .qc-placeholder-input::placeholder { font-style: italic; }
           `}</style>
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
             <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
@@ -1584,21 +1669,20 @@ export default function FindMyWhyApp() {
 
               <div className="flex flex-col items-center gap-3 pt-2">
                 {qcSaved && <p className="text-sm text-green-600 font-medium">✓ Saved to log</p>}
-                <div className="flex gap-3 w-full">
+                <div className="flex justify-center gap-3">
                   <button
                     onClick={handleSaveQcToLog}
                     disabled={qcSaved}
-                    className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors ${
+                    className={`px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm ${
                       qcSaved
                         ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                         : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                     }`}
                   >
-                    <BookOpen size={16} />
                     {qcSaved ? 'Saved' : 'Save to Log'}
                   </button>
-                  <button onClick={icHandleReset} className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
-                    <RotateCcw size={18} /><span>Start Another Decision</span>
+                  <button onClick={icHandleReset} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
+                    New Decision
                   </button>
                 </div>
               </div>
