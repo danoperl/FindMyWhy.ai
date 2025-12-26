@@ -1,4 +1,47 @@
-# React + Vite
+# FindMyWhy.ai
+
+A reflection and clarity tool built with React and Vite.
+
+## Development
+
+### Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+### Development Modes
+
+This project has two development modes depending on what you're working on:
+
+**UI-only development (fast, no API routes):**
+```bash
+npm run dev:ui
+# or
+npm run dev
+```
+- Runs Vite dev server only
+- Fast HMR for UI changes
+- `/api/*` routes will return 404
+
+**Full development (UI + API routes):**
+```bash
+npm run dev:full
+```
+- Runs Vercel dev server
+- Serves both UI (via Vite) and `/api/*` routes
+- Required for testing DM flows that use `/api/dm5`
+- Visit http://localhost:3000 (or the port shown) - `/api/dm5` should not 404
+
+### When to Use Which Mode
+
+- Use `dev:ui` for: UI changes, styling, component work, testing non-DM flows
+- Use `dev:full` for: Testing DM flows, API route changes, end-to-end feature testing
+
+---
+
+## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

@@ -377,4 +377,35 @@ FindMyWhy is not a journal. It's a jumpstart.
 
 Point. Remove fog. Stop.
 
+════════════════════════════════════════════════════════════════════
+
+TAGGING OUTPUT (REQUIRED)
+
+After your main insight text, generate 3–6 tags plus category.
+
+Output format: Append the tags JSON block on a new line after your insight text.
+
+Use ONLY this JSON shape and ONLY these categories:
+
+- value_need
+
+- tension_tradeoff
+
+- pattern_dynamic
+
+- context (use sparingly; max 1)
+
+Example JSON block (append after main text on new line):
+
+{
+  "tags": [
+    { "tag": "#harmony", "category": "value_need" },
+    { "tag": "#boundaries", "category": "tension_tradeoff" }
+  ]
+}
+
+STRICTNESS: no extra keys, no markdown fences, no commentary. Tags must be kebab-case with leading #.
+
+════════════════════════════════════════════════════════════════════
+
 END OF DM5 SYSTEM PROMPT`;

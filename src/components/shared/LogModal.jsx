@@ -4,7 +4,7 @@
 // =============================================================================
 
 import React, { useState, useEffect } from 'react';
-import { X, ArrowLeft, Clipboard, Trash2 } from 'lucide-react';
+import { X, ArrowLeft, Clipboard, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { getLogEntries, updateLogEntry, deleteLogEntry, exportLogEntryMarkdown, exportLogEntryJson } from '../../lib/logbook.js';
 
 export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) {
@@ -13,7 +13,8 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
   const [tagFilter, setTagFilter] = useState(null);
   const [editingTagsFor, setEditingTagsFor] = useState(null);
   const [tagInput, setTagInput] = useState("");
-  const [showSnapshots, setShowSnapshots] = useState({}); // entryId -> boolean
+  const [showSnapshots, setShowSnapshots] = useState({}); // entryId -> boolean (for list view)
+  const [showSnapshotDetail, setShowSnapshotDetail] = useState(false); // for detail view (DM entries only, collapsed by default)
   const [selectedEntryId, setSelectedEntryId] = useState(null);
   const [copiedType, setCopiedType] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -26,6 +27,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
       setEditingTagsFor(null);
       setTagInput("");
       setShowSnapshots({});
+      setShowSnapshotDetail(false); // Reset snapshot detail view toggle
       setSelectedEntryId(null);
       setCopiedType(null);
       setShowDeleteConfirm(false);
@@ -39,20 +41,39 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
     const effectiveMode = entry.mode || "QC";
     const modeMatch = modeFilter === "All" || effectiveMode === modeFilter;
     
-    // Tag filter: exact match only
-    const tagMatch = !tagFilter || (entry.tags && Array.isArray(entry.tags) && entry.tags.includes(tagFilter));
+    // Tag filter: exact match only (handle both string and object tag formats)
+    let tagMatch = true;
+    if (tagFilter && entry.tags && Array.isArray(entry.tags)) {
+      tagMatch = entry.tags.some(tag => {
+        if (typeof tag === 'string') {
+          return tag === tagFilter;
+        } else if (tag && typeof tag === 'object' && tag.tag) {
+          return tag.tag === tagFilter;
+        }
+        return tag?.toString().trim() === tagFilter;
+      });
+    } else if (tagFilter) {
+      tagMatch = false;
+    }
     
     return modeMatch && tagMatch;
   });
 
-  // Compute tag frequency counts
+  // Compute tag frequency counts (handle both string and object tag formats)
   const allTags = {};
   entries.forEach(entry => {
     if (entry.tags && Array.isArray(entry.tags)) {
       entry.tags.forEach(tag => {
-        const trimmed = tag?.toString().trim();
-        if (trimmed) {
-          allTags[trimmed] = (allTags[trimmed] || 0) + 1;
+        let tagStr = '';
+        if (typeof tag === 'string') {
+          tagStr = tag.trim();
+        } else if (tag && typeof tag === 'object' && tag.tag) {
+          tagStr = tag.tag.trim();
+        } else {
+          tagStr = tag?.toString().trim() || '';
+        }
+        if (tagStr) {
+          allTags[tagStr] = (allTags[tagStr] || 0) + 1;
         }
       });
     }
@@ -95,7 +116,15 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
     const entry = entries.find(e => e.id === entryId);
     if (!entry || !Array.isArray(entry.tags)) return;
 
-    const updatedTags = entry.tags.filter(t => t !== tagToRemove);
+    // Handle both string and object tag formats for removal
+    const updatedTags = entry.tags.filter(t => {
+      if (typeof t === 'string') {
+        return t !== tagToRemove;
+      } else if (t && typeof t === 'object' && t.tag) {
+        return t.tag !== tagToRemove;
+      }
+      return true;
+    });
     if (updateLogEntry(entryId, { tags: updatedTags })) {
       setEntries(getLogEntries());
     }
@@ -132,16 +161,63 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
     onClose();
   };
 
-  // Get display tags (deduplicate for display only, preserve storage)
+  // Normalize tags to consistent object format { tag: string, category: string }
+  // Handles: array of objects, array of strings, comma-separated string, or missing
+  const normalizeTags = (entryTags) => {
+    if (!entryTags) return [];
+    
+    let tagArray = [];
+    
+    // Handle array format
+    if (Array.isArray(entryTags)) {
+      tagArray = entryTags;
+    }
+    // Handle comma-separated string
+    else if (typeof entryTags === 'string') {
+      tagArray = entryTags.split(',').map(t => t.trim()).filter(Boolean);
+    }
+    
+    // Normalize each tag to object format
+    const normalized = tagArray.map(t => {
+      // Already an object with .tag property
+      if (t && typeof t === 'object' && t.tag) {
+        return {
+          tag: String(t.tag).trim(),
+          category: String(t.category || 'context').trim()
+        };
+      }
+      // String format - convert to object with colored category
+      else if (typeof t === 'string') {
+        let tagStr = t.trim();
+        // Ensure hash prefix if not present
+        if (tagStr && !tagStr.startsWith('#')) {
+          tagStr = '#' + tagStr;
+        }
+        // Assign context category to legacy string tags so they render with teal fallback (colored, not zinc)
+        return {
+          tag: tagStr,
+          category: 'context' // Legacy tags get context category (renders as teal, not zinc)
+        };
+      }
+      return null;
+    }).filter(Boolean);
+    
+    return normalized;
+  };
+
+  // Get display tags as strings only (for list view compact display)
+  // Handles both string tags (manual) and object tags (auto-generated)
   const getDisplayTags = (tags) => {
-    if (!Array.isArray(tags)) return [];
+    const normalized = normalizeTags(tags);
+    // Return just the tag strings, deduplicated
     const seen = new Set();
-    return tags.filter(t => {
-      const str = t?.toString().trim();
-      if (!str || seen.has(str)) return false;
-      seen.add(str);
-      return true;
-    });
+    return normalized
+      .map(t => t.tag)
+      .filter(tag => {
+        if (!tag || seen.has(tag)) return false;
+        seen.add(tag);
+        return true;
+      });
   };
 
   // Get snapshot text (de-emphasized)
@@ -154,8 +230,75 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
     return null;
   };
 
+  // Get tag category color classes
+  // Signals should always be colored (never zinc like domains)
+  const getTagCategoryClasses = (category) => {
+    const baseClasses = "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset";
+    const categoryClasses = {
+      value_need: "bg-slate-50 text-slate-700 ring-slate-200",
+      tension_tradeoff: "bg-amber-50 text-amber-800 ring-amber-200",
+      pattern_dynamic: "bg-indigo-50 text-indigo-800 ring-indigo-200",
+      context: "bg-teal-50 text-teal-800 ring-teal-200", // Teal fallback for context (not zinc)
+    };
+    // Use teal fallback for unknown/missing categories (ensures Signals are always colored)
+    return `${baseClasses} ${categoryClasses[category] || categoryClasses.context}`;
+  };
+
+  // Format tags for display as normalized objects (for detail view with categories)
+  // Uses normalizeTags for consistency
+  const formatTagsForDisplay = (tags) => {
+    return normalizeTags(tags);
+  };
+
+  // Normalize domains for display (handle array, comma-separated string, or missing)
+  const normalizeDomains = (domains) => {
+    if (!domains) return [];
+    
+    let domainArray = [];
+    
+    // Handle array format
+    if (Array.isArray(domains)) {
+      domainArray = domains;
+    } 
+    // Handle comma-separated string
+    else if (typeof domains === 'string') {
+      domainArray = domains.split(',').map(d => d.trim()).filter(Boolean);
+    }
+    
+    // Normalize each domain: handle "other:specify" format, trim, convert to display label
+    const normalized = domainArray.map(domain => {
+      if (typeof domain === 'string' && domain.includes(':')) {
+        // Extract the part after colon (e.g., "other:specify" -> "specify")
+        return domain.split(':')[1].trim();
+      }
+      return String(domain).trim();
+    }).filter(Boolean); // Remove empties
+    
+    // Deduplicate (case-insensitive)
+    const seen = new Set();
+    return normalized.filter(domain => {
+      const lower = domain.toLowerCase();
+      if (seen.has(lower)) return false;
+      seen.add(lower);
+      return true;
+    });
+  };
+
   // Get selected entry for Replay view
   const selectedEntry = entries.find(e => e.id === selectedEntryId) || null;
+
+  // Diagnostic logging for tags (dev only)
+  useEffect(() => {
+    if (selectedEntry && (import.meta.env?.DEV || import.meta.env?.MODE === 'development')) {
+      console.debug('[LogModal] Entry tags diagnostic:', {
+        entryId: selectedEntry.id,
+        tagsType: typeof selectedEntry.tags,
+        tagsValue: selectedEntry.tags,
+        tagsIsArray: Array.isArray(selectedEntry.tags),
+        tagsLength: Array.isArray(selectedEntry.tags) ? selectedEntry.tags.length : 'N/A'
+      });
+    }
+  }, [selectedEntry]);
 
   // Handle copy to clipboard
   const handleCopy = async (entry, type) => {
@@ -270,6 +413,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                             setSelectedEntryId(entry.id);
                             setShowDeleteConfirm(false);
                             setCopiedType(null);
+                            setShowSnapshotDetail(false); // Reset snapshot toggle when selecting entry
                           }}
                         >
                           {/* Header row */}
@@ -443,6 +587,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                     setSelectedEntryId(null);
                     setShowDeleteConfirm(false);
                     setCopiedType(null);
+                    setShowSnapshotDetail(false); // Reset snapshot toggle when going back
                   }}
                   className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
                 >
@@ -470,39 +615,61 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                 )}
               </div>
 
-              {/* Title line */}
+              {/* Title line - Question only appears once, smaller by 2 steps */}
               {(selectedEntry.question || selectedEntry.title) && (
                 <div>
-                  <h2 className="text-3xl font-semibold text-slate-900 break-words mb-2">
+                  <h2 className="text-xl font-semibold text-slate-900 break-words">
                     {selectedEntry.question || selectedEntry.title}
                   </h2>
-                  {selectedEntry.question && selectedEntry.title && selectedEntry.question !== selectedEntry.title && (
-                    <p className="text-sm text-slate-600 italic">
-                      {selectedEntry.question}
-                    </p>
-                  )}
                 </div>
               )}
 
-              {/* DOMAINS */}
-              {selectedEntry.domains && Array.isArray(selectedEntry.domains) && selectedEntry.domains.length > 0 && (
-                <div>
-                  <h3 className="text-xs font-semibold text-slate-500 uppercase mb-2">DOMAINS</h3>
-                  <div className="text-sm text-slate-700">
-                    {selectedEntry.domains.map((domain, idx) => (
-                      <span key={idx}>
-                        {idx > 0 && ', '}
-                        {typeof domain === 'string' && domain.includes(':') ? domain.split(':')[1] : domain}
-                      </span>
-                    ))}
+              {/* Domains - Display as pill chips (only if present) */}
+              {(() => {
+                const domains = normalizeDomains(selectedEntry.domains);
+                if (domains.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">Domains</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {domains.map((domain, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset bg-zinc-50 text-zinc-700 ring-zinc-200"
+                        >
+                          {domain}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
+
+              {/* Signals - Display as color-coded pills (only if present) */}
+              {(() => {
+                const displayTags = formatTagsForDisplay(selectedEntry.tags);
+                if (displayTags.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">Signals</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {displayTags.map((tagObj, idx) => (
+                        <span
+                          key={idx}
+                          className={getTagCategoryClasses(tagObj.category)}
+                        >
+                          {tagObj.tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* WHY Chain (DM3) */}
               {selectedEntry.whyChain && Array.isArray(selectedEntry.whyChain) && selectedEntry.whyChain.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-500 uppercase mb-2">WHY CHAIN</h3>
+                  <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">WHY CHAIN</h3>
                   <div className="space-y-2">
                     {selectedEntry.whyChain.map((why, idx) => (
                       <div key={idx} className="text-sm text-slate-700 leading-relaxed">
@@ -513,10 +680,10 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                 </div>
               )}
 
-              {/* Patterns (DM4) */}
+              {/* Patterns (DM4) - Renamed to "What Keeps Showing Up" */}
               {selectedEntry.dm4Patterns && Array.isArray(selectedEntry.dm4Patterns) && selectedEntry.dm4Patterns.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-500 uppercase mb-2">PATTERNS (DM4)</h3>
+                  <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">What Keeps Showing Up</h3>
                   <div className="space-y-1">
                     {selectedEntry.dm4Patterns.map((pattern, idx) => (
                       <div key={idx} className="text-sm text-slate-700">
@@ -530,20 +697,41 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
               {/* Insight (DM5) */}
               {selectedEntry.dm5InsightText && (
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-500 uppercase mb-2">INSIGHT (DM5)</h3>
+                  {/* Divider - aligns flush-left with header, flush-right with Insight box outer edge */}
+                  <div className="pt-2 pb-2">
+                    <div className="border-t border-slate-200/60"></div>
+                  </div>
+                  <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">INSIGHT</h3>
                   <div className="bg-indigo-50 rounded-lg p-3 text-sm text-slate-800 whitespace-pre-wrap">
                     {renderValue(selectedEntry.dm5InsightText)}
                   </div>
                 </div>
               )}
 
-              {/* Clarity Snapshot (DM6) */}
+              {/* Clarity Snapshot (DM6) - Collapsed by default with toggle */}
               {selectedEntry.claritySnapshotText && (
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-500 uppercase mb-2">CLARITY SNAPSHOT (DM6)</h3>
-                  <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-                    {renderValue(selectedEntry.claritySnapshotText)}
-                  </div>
+                  <button
+                    onClick={() => setShowSnapshotDetail(!showSnapshotDetail)}
+                    className="flex items-center gap-2 text-sm font-semibold text-slate-500 uppercase mb-2 w-full text-left hover:text-slate-500 focus:text-slate-500"
+                  >
+                    {showSnapshotDetail ? (
+                      <>
+                        <ChevronUp size={16} className="text-slate-400" />
+                        Hide Clarity Snapshot
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={16} className="text-slate-400" />
+                        View your Clarity Snapshot
+                      </>
+                    )}
+                  </button>
+                  {showSnapshotDetail && (
+                    <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                      {renderValue(selectedEntry.claritySnapshotText)}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -552,7 +740,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                 <>
                   {selectedEntry.qcInputs && (
                     <div>
-                      <h3 className="text-xs font-semibold text-slate-500 uppercase mb-2">QC INPUTS</h3>
+                      <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">QC INPUTS</h3>
                       <div className="space-y-1 text-sm text-slate-700">
                         {selectedEntry.qcInputs.qc1 && <div>QC1: {renderValue(selectedEntry.qcInputs.qc1)}</div>}
                         {selectedEntry.qcInputs.qc2 && <div>QC2: {renderValue(selectedEntry.qcInputs.qc2)}</div>}
@@ -563,7 +751,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                   )}
                   {selectedEntry.qcOutputs && (
                     <div>
-                      <h3 className="text-xs font-semibold text-slate-500 uppercase mb-2">QC OUTPUTS</h3>
+                      <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">QC OUTPUTS</h3>
                       <div className="space-y-1 text-sm text-slate-700">
                         {Object.entries(selectedEntry.qcOutputs).map(([key, value]) => (
                           value && (

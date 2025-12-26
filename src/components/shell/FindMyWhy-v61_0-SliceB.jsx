@@ -764,6 +764,7 @@ export default function FindMyWhyApp() {
   // DM5 runtime state
   const [dm4PayloadJson, setDm4PayloadJson] = useState('');
   const [dm5OutputText, setDm5OutputText] = useState('');
+  const [dm5Tags, setDm5Tags] = useState([]); // Array of { tag: string, category: string }
   const [dm5Status, setDm5Status] = useState('idle'); // 'idle' | 'loading' | 'error'
   const [dm5Error, setDm5Error] = useState('');
   
@@ -839,6 +840,7 @@ export default function FindMyWhyApp() {
     setInsight("");
     setDm4PayloadJson("");
     setDm5OutputText("");
+    setDm5Tags([]);
     setDm5Status('idle');
     setDm5Error("");
     setRefineUsed(false);
@@ -957,6 +959,7 @@ export default function FindMyWhyApp() {
     setInsight('');
     setDm4PayloadJson('');
     setDm5OutputText('');
+    setDm5Tags([]);
     setDm5Status('idle');
     setDm5Error('');
     setRefineUsed(false);
@@ -985,6 +988,7 @@ export default function FindMyWhyApp() {
       setInsight('');
       setDm4PayloadJson('');
       setDm5OutputText('');
+      setDm5Tags([]);
       setCurrentStep(4);
     }
   };
@@ -1014,6 +1018,7 @@ export default function FindMyWhyApp() {
     setInsight('');
     setDm4PayloadJson('');
     setDm5OutputText('');
+    setDm5Tags([]);
     setDm5Status('idle');
     setDm5Error('');
     
@@ -1083,6 +1088,7 @@ export default function FindMyWhyApp() {
           "You can still review your WHY Chain + Pattern Results.\n\n" +
           "Try again later after API access is re-enabled.";
         setDm5OutputText(fallback);
+        setDm5Tags([]);
         setDm5Status('idle');
         setCurrentStep(5);
         return;
@@ -1113,13 +1119,121 @@ export default function FindMyWhyApp() {
           "You can still review your WHY Chain + Pattern Results.\n\n" +
           "Try again later after API access is re-enabled.";
         setDm5OutputText(fallback);
+        setDm5Tags([]);
         setDm5Status('idle');
         setCurrentStep(5);
         return;
       }
       
+      // Parse tags from response (robust: handle prose + JSON)
+      let parsedTags = [];
+      let insightText = candidate;
+      
+      /**
+       * Extract and normalize tags from DM5 response text
+       * Searches for first JSON object containing "tags" array
+       */
+      const extractTagsFromText = (text) => {
+        try {
+          // Strategy: Scan text for JSON objects, try parsing each candidate
+          // Look for opening braces and try to find matching closing braces
+          const candidates = [];
+          let braceDepth = 0;
+          let startIdx = -1;
+          
+          for (let i = 0; i < text.length; i++) {
+            if (text[i] === '{') {
+              if (braceDepth === 0) {
+                startIdx = i;
+              }
+              braceDepth++;
+            } else if (text[i] === '}') {
+              braceDepth--;
+              if (braceDepth === 0 && startIdx !== -1) {
+                // Found complete JSON object candidate
+                const candidate = text.substring(startIdx, i + 1);
+                if (candidate.includes('"tags"')) {
+                  candidates.push({ text: candidate, startIdx, endIdx: i + 1 });
+                }
+                startIdx = -1;
+              }
+            }
+          }
+          
+          // Try parsing candidates from last to first (tags likely at end)
+          for (let i = candidates.length - 1; i >= 0; i--) {
+            try {
+              const parsed = JSON.parse(candidates[i].text);
+              if (parsed && Array.isArray(parsed.tags)) {
+                // Validate and normalize tags
+                const normalizedTags = parsed.tags
+                  .filter(t => t && typeof t === 'object' && t.tag && t.category)
+                  .map(t => {
+                    let tag = String(t.tag).trim();
+                    let category = String(t.category).trim();
+                    
+                    // Normalize tag: ensure # prefix
+                    const hasHashPrefix = tag.startsWith('#');
+                    if (!hasHashPrefix) {
+                      tag = '#' + tag;
+                    }
+                    
+                    // Convert to kebab-case (lowercase, replace non-alphanumeric with hyphens)
+                    // Preserve # prefix during conversion
+                    const withoutHash = tag.substring(1);
+                    const normalized = withoutHash.toLowerCase()
+                      .replace(/[^a-z0-9-]/g, '-')
+                      .replace(/-+/g, '-')
+                      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+                    
+                    tag = '#' + normalized;
+                    
+                    // Validate category
+                    const validCategories = ['value_need', 'tension_tradeoff', 'pattern_dynamic', 'context'];
+                    if (!validCategories.includes(category)) {
+                      category = 'context'; // Default fallback
+                    }
+                    
+                    return { tag, category };
+                  })
+                  .filter(t => t.tag && t.tag.length > 1 && t.tag.startsWith('#')) // Must have at least "#a"
+                  .slice(0, 6); // Max 6 tags
+                
+                if (normalizedTags.length > 0) {
+                  // Remove the matched JSON from text
+                  const remainingText = (
+                    text.substring(0, candidates[i].startIdx) + 
+                    text.substring(candidates[i].endIdx)
+                  ).trim();
+                  return { tags: normalizedTags, remainingText };
+                }
+              }
+            } catch (e) {
+              // Try next candidate
+              continue;
+            }
+          }
+        } catch (error) {
+          // Fail-soft
+          console.warn('DM5 tag extraction error:', error);
+        }
+        
+        return { tags: [], remainingText: text };
+      };
+      
+      try {
+        const { tags, remainingText } = extractTagsFromText(candidate);
+        parsedTags = tags;
+        insightText = remainingText;
+      } catch (parseError) {
+        // Fail-soft: if tags parsing fails, continue without tags
+        console.warn('DM5 tags parsing failed:', parseError);
+        parsedTags = [];
+      }
+      
       // On success
-      setDm5OutputText(candidate);
+      setDm5OutputText(insightText);
+      setDm5Tags(parsedTags);
       setDm5Status('idle');
       setCurrentStep(5);
     } catch (error) {
@@ -1131,6 +1245,7 @@ export default function FindMyWhyApp() {
         "You can still review your WHY Chain + Pattern Results.\n\n" +
         "Try again later after API access is re-enabled.";
       setDm5OutputText(fallback);
+      setDm5Tags([]);
       setDm5Status('idle');
       setCurrentStep(5);
     }
@@ -1300,13 +1415,19 @@ export default function FindMyWhyApp() {
     // Extract whyChain as string array
     const whyChainTexts = whyChain.map(w => w.whyText);
 
+    // Format tags for storage (array of { tag, category } objects)
+    const formattedTags = dm5Tags.map(t => ({
+      tag: t.tag,
+      category: t.category
+    }));
+
     const logEntry = {
       id: crypto.randomUUID ? crypto.randomUUID() : `dm-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
       mode: 'DM',
       question: surfaceQuestion,
       title: title,
-      tags: [],
+      tags: formattedTags,
       excerpt: excerpt,
       failSoft: failSoft,
       whyChain: whyChainTexts,
