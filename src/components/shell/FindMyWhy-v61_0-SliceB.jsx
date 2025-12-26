@@ -1835,8 +1835,8 @@ export default function FindMyWhyApp() {
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
           <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
           <div className="text-center mb-4">
-            <h1 className="text-5xl font-bold text-slate-900">FindMyWhy.ai</h1>
-            <p className="text-sm text-slate-500 mt-1">BETA | 2025</p>
+            <h1 className="fmy-brand-logotype text-4xl font-bold text-slate-900 tracking-tight">FindMyWhy?</h1>
+            <p className="text-sm text-slate-500 mt-3">BETA | 2025</p>
           </div>
           
           <FmyCard>
