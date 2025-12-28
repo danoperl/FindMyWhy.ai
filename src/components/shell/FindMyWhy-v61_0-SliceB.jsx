@@ -109,6 +109,32 @@ function PipelineStrip({ currentStep }) {
   );
 }
 
+function ThinkingIndicator() {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-slate-500 text-sm">
+      <svg
+        className="animate-spin h-3.5 w-3.5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-30"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeDasharray="47 94"
+          strokeDashoffset="0"
+          strokeLinecap="round"
+        />
+      </svg>
+      <span>Thinking…</span>
+    </span>
+  );
+}
+
 // =============================================================================
 // PATTERN EXTRACTION (simplified)
 // =============================================================================
@@ -1666,7 +1692,7 @@ export default function FindMyWhyApp() {
               {/* Loading State */}
               {qc5Status === 'loading' && (
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
-                  <p className="text-slate-600">Generating clarity...</p>
+                  <ThinkingIndicator />
                 </div>
               )}
 
@@ -1757,8 +1783,8 @@ export default function FindMyWhyApp() {
 
                     {/* Optional footer nudge */}
                     <div className="text-center pt-2">
-                      <p className="text-xs text-slate-500 italic">
-                        Want to explore why this pattern shows up? Deep-Dive Mode can walk you through it.
+                      <p className="text-base text-blue-600 italic">
+                        Want to explore why this pattern shows up? <span className="font-bold">Deep-Dive Mode</span> can walk you through it!
                       </p>
                     </div>
                   </>
@@ -2302,8 +2328,38 @@ export default function FindMyWhyApp() {
                     Refine WHYs
                   </button>
                 )}
-                <button onClick={handleDM4Continue} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center gap-2">
-                  Continue <ArrowRight size={18} />
+                <button 
+                  onClick={handleDM4Continue} 
+                  disabled={dm5Status === 'loading'}
+                  className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center gap-2 transition-colors ${
+                    dm5Status === 'loading' ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {dm5Status === 'loading' && (
+                    <span className="inline-flex items-center gap-1.5 text-white text-sm">
+                      <svg
+                        className="animate-spin h-3.5 w-3.5"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-30"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeDasharray="47 94"
+                          strokeDashoffset="0"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <span>Thinking…</span>
+                    </span>
+                  )}
+                  {dm5Status !== 'loading' && 'Continue'}
+                  {dm5Status !== 'loading' && <ArrowRight size={18} />}
                 </button>
               </div>
             </div>
