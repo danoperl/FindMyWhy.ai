@@ -10,7 +10,7 @@ import fmyLogo from '../../assets/fmy-logo-v2.svg';
  Visual styling is handled via Tailwind utilities.
 */
 
-export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDeeperMeaning }) {
+export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDeeperMeaning, onEnter15SQ }) {
   const [name, setName] = useState('');
   const [passcode, setPasscode] = useState('');
 
@@ -116,25 +116,37 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
           <div className="border-b border-slate-200" />
 
           {/* Entry Buttons */}
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => {
-                // Entry Hatch direct mode entry (can be collapsed back to mode selector later)
-                enterIC?.();
-              }}
-              className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg transition-colors w-full"
-            >
-              Quick Clarity
-            </button>
-            <button
-              onClick={() => {
-                // Entry Hatch direct mode entry (can be collapsed back to mode selector later)
-                enterDM?.();
-              }}
-              className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg transition-colors w-full"
-            >
-              Deeper Meaning
-            </button>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => {
+                  // Entry Hatch direct mode entry (can be collapsed back to mode selector later)
+                  enterIC?.();
+                }}
+                className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg transition-colors w-full"
+              >
+                Quick Clarity
+              </button>
+              <button
+                onClick={() => {
+                  onEnter15SQ?.();
+                }}
+                className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg transition-colors w-full"
+              >
+                15 Silly Questions
+              </button>
+            </div>
+            <div className="flex justify-center">
+              <button
+                onClick={() => {
+                  // Entry Hatch direct mode entry (can be collapsed back to mode selector later)
+                  enterDM?.();
+                }}
+                className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg transition-colors w-full max-w-[calc(50%-0.5rem)]"
+              >
+                Deeper Meaning
+              </button>
+            </div>
           </div>
         </div>
       </div>

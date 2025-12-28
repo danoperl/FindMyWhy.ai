@@ -6,6 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, RotateCcw, HelpCircle, CheckCircle, AlertCircle, Clipboard, Check, BookOpen } from 'lucide-react';
 import HomeScreen from "../home/HomeScreen.jsx";
+import FifteenSillyQuestions from "../home/FifteenSillyQuestions-v66.jsx";
 import { BackToHomePill } from "../ui";
 import LogModal from "../shared/LogModal.jsx";
 import { saveLogEntry, getLogEntries } from "../../lib/logbook.js";
@@ -749,8 +750,10 @@ const QC_EXAMPLE_SETS = [
 // =============================================================================
 
 export default function FindMyWhyApp() {
-  const [screen, setScreen] = useState("HOME"); // HOME | DM | IC
+  const [screen, setScreen] = useState("HOME"); // HOME | DM | IC | 15SQ
   const [currentStep, setCurrentStep] = useState(0);
+  const [seedQuestion, setSeedQuestion] = useState(''); // For 15SQ → QC prefill
+  const [from15SQ, setFrom15SQ] = useState(false); // Track if entered from 15SQ
   const [surfaceQuestion, setSurfaceQuestion] = useState('');
   const [domainsSelected, setDomainsSelected] = useState([]); // Array, max length 3
   const [otherSpecify, setOtherSpecify] = useState(''); // String for "other" specification
@@ -1293,6 +1296,26 @@ export default function FindMyWhyApp() {
     setQc5Status('idle');
     setQc5Results(null);
     setQc5Error('');
+    setSeedQuestion('');
+    setFrom15SQ(false);
+  };
+  
+  // Handler for 15SQ question selection
+  const handle15SQQuestionSelect = (questionText) => {
+    // Reset IC state
+    setIcStage('input');
+    setIcDecision(questionText); // Pre-fill with question text (editable, no auto-submit)
+    setIcUserInput('');
+    setIcAnswers({ initial: '', q1: '', q2: '', q3: '' });
+    setIcTags([]);
+    setIcSaved(false);
+    setQcSaved(false);
+    setQc5Status('idle');
+    setQc5Results(null);
+    setQc5Error('');
+    setSeedQuestion(questionText);
+    setFrom15SQ(true);
+    setScreen("IC");
   };
 
   const handleIcToDm = () => {
@@ -1487,6 +1510,19 @@ export default function FindMyWhyApp() {
           resetDM();
           setScreen("DM");
         }}
+        onEnter15SQ={() => setScreen("15SQ")}
+      />
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 15SQ - 15 Silly Questions
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (screen === "15SQ") {
+    screenBody = (
+      <FifteenSillyQuestions
+        onSelectQuestion={handle15SQQuestionSelect}
+        onBackToHome={() => setScreen("HOME")}
       />
     );
   }
@@ -1533,6 +1569,11 @@ export default function FindMyWhyApp() {
                   <p className={`${fmyTheme.typography.caption} mt-1 max-w-xl`}>Share something you'd like quick clarity on.</p>
                 </div>
                 <input type="text" value={icDecision} onChange={(e) => setIcDecision(e.target.value)} placeholder={qcExampleSet?.like_by_step?.Q0 || (qcExampleSet?.q0_seed ? `Like… ${qcExampleSet.q0_seed}` : '')} className="qc-placeholder-input w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-900 transition-shadow" onKeyPress={(e) => e.key === 'Enter' && icHandleStartFlow()} />
+                {from15SQ && (
+                  <p className="text-sm italic text-slate-400 -mt-2 mb-12">
+                    Add a few words to your silly question for more clarity.
+                  </p>
+                )}
                 <div className="flex justify-center">
                   <button onClick={icHandleStartFlow} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm">
                     Start Instant Clarity
