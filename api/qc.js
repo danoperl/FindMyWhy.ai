@@ -6,6 +6,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
+import { rewriteFilterV1, logFilterExecution } from '../lib/languageGovernance/rewriteFilter_v1.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = join(__filename, '..');
@@ -180,13 +181,54 @@ Generate the QC-5 output JSON with all six required keys.`;
       }
     }
 
+    // ========================================================================
+    // REWRITE FILTER V1 — ENFORCEMENT (MANDATORY, NON-BYPASSABLE)
+    // ========================================================================
+    // Apply filter to each user-facing text field
+    const userInputText = `${qc1_decision} ${qc2_choice_frame} ${qc3_influences} ${qc4_forced_pick}`;
+    const filteredOutput = {};
+    const filterResults = [];
+
+    for (const key of requiredKeys) {
+      const originalText = qc5Output[key];
+      
+      // Apply Rewrite Filter v1
+      const filterResult = rewriteFilterV1({
+        model_output_text: originalText,
+        user_input_text: userInputText,
+        system_prompt_version: 'OAI_SYS_v68.4',
+        model_name: OPENAI_MODEL,
+      });
+
+      // Log filter execution
+      logFilterExecution({
+        ...filterResult.log_data,
+        field_name: key,
+        endpoint: 'qc',
+      });
+
+      filterResults.push({
+        field: key,
+        outcome: filterResult.outcome,
+        reason_code: filterResult.reason_code,
+      });
+
+      // Use filtered/fallback text
+      filteredOutput[key] = filterResult.final_text;
+    }
+
+    // [INSTRUMENTATION] Log filter summary
+    console.log('[QC] REWRITE_FILTER_V1 SUMMARY:', JSON.stringify(filterResults, null, 2));
+
     // [INSTRUMENTATION] Add metadata to response indicating OpenAI was used
     // Return QC-5 output with instrumentation metadata
     return res.status(200).json({ 
-      ...qc5Output,
+      ...filteredOutput,
       qc5Meta: {
         source: 'openai',
-        model: OPENAI_MODEL
+        model: OPENAI_MODEL,
+        filter_applied: true,
+        filter_version: 'RF_v1',
       }
     });
 

@@ -4,6 +4,7 @@
 // =============================================================================
 
 import { DM5_V1_SYSTEM_PROMPT } from './prompts/dm5_v1_system_prompt.js';
+import { rewriteFilterV1, logFilterExecution } from '../lib/languageGovernance/rewriteFilter_v1.js';
 
 /**
  * Vercel Serverless Function
@@ -171,13 +172,39 @@ Generate clarity-producing insight based on this analysis.`;
     console.log('[DM5] OPENAI OK');
 
     const openaiData = await openaiResponse.json();
-    const dm5OutputText = openaiData.choices?.[0]?.message?.content?.trim() || '';
+    const dm5OutputTextRaw = openaiData.choices?.[0]?.message?.content?.trim() || '';
 
     // Fail closed: empty or whitespace-only response
-    if (!dm5OutputText || dm5OutputText.length === 0) {
+    if (!dm5OutputTextRaw || dm5OutputTextRaw.length === 0) {
       console.log('[DM5] FALLBACK PATH USED');
       return res.status(502).json({ error: 'Empty response from OpenAI' });
     }
+
+    // ========================================================================
+    // REWRITE FILTER V1 — ENFORCEMENT (MANDATORY, NON-BYPASSABLE)
+    // ========================================================================
+    // Build user input text from DM4 payload for value-definition checks
+    const userInputText = payloadString; // Use the full DM4 payload as user input context
+    
+    // Apply Rewrite Filter v1
+    const filterResult = rewriteFilterV1({
+      model_output_text: dm5OutputTextRaw,
+      user_input_text: userInputText,
+      system_prompt_version: 'OAI_SYS_v68.4',
+      model_name: OPENAI_MODEL,
+    });
+
+    // Log filter execution
+    logFilterExecution({
+      ...filterResult.log_data,
+      endpoint: 'dm5',
+    });
+
+    // [INSTRUMENTATION] Log filter result
+    console.log(`[DM5] REWRITE_FILTER_V1: ${filterResult.outcome} (${filterResult.reason_code})`);
+
+    // Use filtered/fallback text - client must never see rejected or unfiltered text
+    const dm5OutputText = filterResult.final_text;
 
     // [INSTRUMENTATION] Add metadata to response indicating OpenAI was used
     // Return DM5 output with instrumentation metadata
@@ -185,7 +212,11 @@ Generate clarity-producing insight based on this analysis.`;
       dm5OutputText,
       dm5Meta: {
         source: 'openai',
-        model: OPENAI_MODEL
+        model: OPENAI_MODEL,
+        filter_applied: true,
+        filter_version: 'RF_v1',
+        filter_outcome: filterResult.outcome,
+        filter_reason_code: filterResult.reason_code,
       }
     });
 
