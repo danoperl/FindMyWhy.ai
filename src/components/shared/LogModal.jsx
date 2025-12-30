@@ -4,7 +4,7 @@
 // =============================================================================
 
 import React, { useState, useEffect } from 'react';
-import { X, ArrowLeft, Clipboard, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, ArrowLeft, Clipboard, Trash2, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react';
 import { getLogEntries, updateLogEntry, deleteLogEntry, exportLogEntryMarkdown, exportLogEntryJson } from '../../lib/logbook.js';
 
 export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) {
@@ -18,6 +18,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
   const [selectedEntryId, setSelectedEntryId] = useState(null);
   const [copiedType, setCopiedType] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showKebabMenu, setShowKebabMenu] = useState(false);
 
   // Reset filters and load entries when modal opens
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
       setSelectedEntryId(null);
       setCopiedType(null);
       setShowDeleteConfirm(false);
+      setShowKebabMenu(false);
       setEntries(getLogEntries());
     }
   }, [isOpen]);
@@ -413,6 +415,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                             setSelectedEntryId(entry.id);
                             setShowDeleteConfirm(false);
                             setCopiedType(null);
+                            setShowKebabMenu(false);
                             setShowSnapshotDetail(false); // Reset snapshot toggle when selecting entry
                           }}
                         >
@@ -587,6 +590,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                     setSelectedEntryId(null);
                     setShowDeleteConfirm(false);
                     setCopiedType(null);
+                    setShowKebabMenu(false);
                     setShowSnapshotDetail(false); // Reset snapshot toggle when going back
                   }}
                   className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
@@ -740,7 +744,7 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                 <>
                   {selectedEntry.qcInputs && (
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">QC INPUTS</h3>
+                      <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">INPUTS</h3>
                       <div className="space-y-1 text-sm text-slate-700">
                         {selectedEntry.qcInputs.qc1 && <div>QC1: {renderValue(selectedEntry.qcInputs.qc1)}</div>}
                         {selectedEntry.qcInputs.qc2 && <div>QC2: {renderValue(selectedEntry.qcInputs.qc2)}</div>}
@@ -749,47 +753,119 @@ export default function LogModal({ isOpen, onClose, onAskAgain, onExitToHome }) 
                       </div>
                     </div>
                   )}
-                  {selectedEntry.qcOutputs && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">QC OUTPUTS</h3>
-                      <div className="space-y-1 text-sm text-slate-700">
-                        {Object.entries(selectedEntry.qcOutputs).map(([key, value]) => (
-                          value && (
-                            <div key={key}>
-                              <span className="font-medium">{key}:</span> {renderValue(value)}
-                            </div>
-                          )
-                        ))}
+                  {selectedEntry.qcOutputs && (() => {
+                    // Define QC output fields in display order (excluding meta fields)
+                    const qcFieldOrder = [
+                      'distilled_choice',
+                      'what_influenced_it',
+                      'instinctual_pull',
+                      'what_this_says_about_this_moment',
+                      'reframe_want',
+                      'reframe_need'
+                    ];
+                    
+                    // Filter out meta fields and get only valid QC fields
+                    const validFields = qcFieldOrder.filter(field => {
+                      const value = selectedEntry.qcOutputs[field];
+                      return value && typeof value === 'string' && value.trim().length > 0;
+                    });
+                    
+                    // If no valid fields, show fallback
+                    if (validFields.length === 0) {
+                      return (
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">SUMMARY</h3>
+                          <div className="bg-indigo-50 rounded-lg p-3 text-sm text-slate-800">
+                            <p className="text-slate-500">No QC output recorded for this entry.</p>
+                          </div>
+                        </div>
+                      );
+                    }
+                    
+                    // Render structured QC outputs
+                    return (
+                      <div>
+                        <h3 className="text-sm font-semibold text-slate-500 uppercase mb-2">SUMMARY</h3>
+                        <div className="bg-indigo-50 rounded-lg p-3 text-sm text-slate-800">
+                          <div className="space-y-3">
+                            {validFields.map(field => {
+                              const value = selectedEntry.qcOutputs[field];
+                              // Convert snake_case to Title Case for labels
+                              const label = field
+                                .split('_')
+                                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                .join(' ');
+                              
+                              return (
+                                <div key={field}>
+                                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-1">
+                                    {label}
+                                  </div>
+                                  <p className="text-sm text-slate-700 leading-relaxed">
+                                    {value}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </>
               )}
 
               {/* Actions block */}
-              <div className="pt-4 border-t border-slate-200 space-y-3">
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <button
-                    onClick={() => handleCopy(selectedEntry, 'markdown')}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 transition-colors text-sm font-medium"
-                  >
-                    <Clipboard size={16} />
-                    {copiedType === 'markdown' ? 'Copied!' : 'Copy as text'}
-                  </button>
-                  <button
-                    onClick={() => handleCopy(selectedEntry, 'json')}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 transition-colors text-sm font-medium"
-                  >
-                    <Clipboard size={16} />
-                    {copiedType === 'json' ? 'Copied!' : 'Copy JSON'}
-                  </button>
-                  <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 transition-colors text-sm font-medium"
-                  >
-                    <Trash2 size={16} />
-                    Delete Entry
-                  </button>
+              <div className="pt-4 border-t border-slate-200 space-y-3 overflow-visible">
+                <div className="mt-6 grid grid-cols-3 items-center">
+                  <div />
+                  <div className="justify-self-center">
+                    <div className="inline-flex gap-3">
+                      <button
+                        onClick={() => handleCopy(selectedEntry, 'markdown')}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 transition-colors text-sm font-medium whitespace-nowrap"
+                      >
+                        <Clipboard size={16} />
+                        {copiedType === 'markdown' ? 'Copied!' : 'Copy as text'}
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 transition-colors text-sm font-medium whitespace-nowrap"
+                      >
+                        <Trash2 size={16} />
+                        Delete Entry
+                      </button>
+                    </div>
+                  </div>
+                  <div className="justify-self-end relative">
+                    <button
+                      onClick={() => setShowKebabMenu(!showKebabMenu)}
+                      className="inline-flex items-center justify-center p-3 rounded-xl bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 transition-colors"
+                      aria-label="More options"
+                    >
+                      <MoreVertical size={16} />
+                    </button>
+                    {showKebabMenu && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setShowKebabMenu(false)}
+                        />
+                        <div className="absolute right-0 bottom-full mb-2 w-40 rounded-md border border-slate-200 bg-white shadow-lg z-50">
+                          <button
+                            onClick={() => {
+                              handleCopy(selectedEntry, 'json');
+                              setShowKebabMenu(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-slate-800 hover:bg-slate-50 flex items-center gap-2"
+                          >
+                            <Clipboard size={16} />
+                            {copiedType === 'json' ? 'Copied!' : 'Copy JSON'}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {/* Delete confirmation */}
