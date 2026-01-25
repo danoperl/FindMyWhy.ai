@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import fmyLogo from '../../assets/fmy-logo-v2.svg';
+import React from 'react';
+import brainIcon from '../../assets/icons/brain.svg';
+import signpostIcon from '../../assets/icons/signpost.svg';
+import stopwatchIcon from '../../assets/icons/stopwatch.svg';
+import fingerIcon from '../../assets/icons/finger.svg';
 
 /*
  Entry Hatch pattern markers:
@@ -11,151 +14,124 @@ import fmyLogo from '../../assets/fmy-logo-v2.svg';
 */
 
 export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDeeperMeaning, onEnter15SQ }) {
-  const [name, setName] = useState('');
-  const [passcode, setPasscode] = useState('');
-
   // Support both prop name sets
   const enterIC = onEnterIC || onQuickClarity;
   const enterDM = onEnterDM || onDeeperMeaning;
 
-  const handlePasscodeChange = (e) => {
-    const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-    setPasscode(val);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 flex flex-col items-center justify-between">
-      <div className="max-w-md w-full space-y-6 flex-1 flex flex-col justify-center">
-        {/* Logo + Header */}
-        <div className="flex flex-col items-center space-y-3">
-          <img src={fmyLogo} alt="FindMyWhy logo" className="h-16 w-auto" />
-          <h1 className="fmy-brand-logotype text-4xl font-bold text-slate-900">FindMyWhy?</h1>
-        </div>
-
-        {/* What's on your mind? Panel */}
-        <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 shadow-lg p-8 text-center space-y-2">
-          <p className="fmy-entry-welcome font-manrope text-lg font-normal italic text-blue-600">
-            "This is where we begin"&nbsp;&nbsp;&nbsp;
-          </p>
-          <p className="fmy-entry-prompt font-manrope text-3xl font-medium text-slate-900 tracking-tight">
-            What's on your mind? <span className="text-4xl">🤔</span>
-          </p>
-        </div>
-
-        {/* Card */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.12)] p-6 space-y-5">
+    <div className="min-h-screen flex flex-col">
+      {/* Top white section with Register/Login and brain icon */}
+      <div className="bg-white pt-20 pb-6 relative">
+        <div className="max-w-2xl mx-auto px-4">
+          {/* Register | Login links */}
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            <a href="#" className="text-sm text-gray-600 hover:text-gray-800">Register</a>
+            <span className="text-orange-300">|</span>
+            <a href="#" className="text-sm text-gray-600 hover:text-gray-800">Login</a>
+          </div>
           
-          {/* Mission Brief */}
-          <div>
-            <p className="text-lg font-bold text-slate-700 leading-relaxed">
-              FindMyWhy is a thinking tool.
-            </p>
-            <p className="text-base text-slate-700 leading-relaxed mt-2">
-              It helps you work through one specific question by asking a small number of high-leverage prompts — then it ends.
-            </p>
-          </div>
-
-          {/* Flight Parameters */}
-          <ul className="text-base text-slate-600 space-y-1">
-            <li>• Not therapy</li>
-            <li>• Not journaling</li>
-            <li>• No right answers</li>
-            <li>• You stay in control</li>
-            <li>• Typical session: 2–5 minutes</li>
-          </ul>
-
-          {/* Divider */}
-          <div className="border-b border-slate-200" />
-
-          {/* Control Prompt */}
-          <p className="text-sm font-medium text-slate-800">
-            Bring one question or situation you want to get clearer on.
-          </p>
-
-          {/* Trust Line */}
-          <p className="text-xs text-slate-500">
-            Your responses aren’t shared, and you can leave the session at any time.
-          </p>
-
-          {/* Divider */}
-          <div className="border-b border-slate-200" />
-
-          {/* Name Field */}
-          <div>
-            <label htmlFor="name-input" className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-1.5">
-              Name (optional)
-            </label>
-            <input
-              id="name-input"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder=""
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-900"
+          {/* Brain icon (overlaps white/beige seam) */}
+          <div className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 z-20">
+            <img
+              src={brainIcon}
+              alt="Brain"
+              className="w-[210px] h-[210px] md:w-[228px] md:h-[228px]"
             />
-          </div>
-
-          {/* Passcode Field */}
-          <div>
-            <label htmlFor="passcode-input" className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-1.5">
-              4-digit pass code (optional)
-            </label>
-            <input
-              id="passcode-input"
-              type="text"
-              inputMode="numeric"
-              value={passcode}
-              onChange={handlePasscodeChange}
-              placeholder=""
-              maxLength={4}
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-900 tracking-widest"
-            />
-          </div>
-
-          {/* Divider */}
-          <div className="border-b border-slate-200" />
-
-          {/* Entry Buttons */}
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => {
-                  // Entry Hatch direct mode entry (can be collapsed back to mode selector later)
-                  enterIC?.();
-                }}
-                className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg transition-colors w-full"
-              >
-                Quick Clarity
-              </button>
-              <button
-                onClick={() => {
-                  onEnter15SQ?.();
-                }}
-                className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg transition-colors w-full"
-              >
-                15 Silly Questions
-              </button>
-            </div>
-            <div className="flex justify-center">
-              <button
-                onClick={() => {
-                  // Entry Hatch direct mode entry (can be collapsed back to mode selector later)
-                  enterDM?.();
-                }}
-                className="px-6 py-4 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg transition-colors w-full max-w-[calc(50%-0.5rem)]"
-              >
-                Deeper Meaning
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="max-w-md w-full px-4 pb-4 -mt-4">
-        <p className="text-sm text-slate-500 text-center">
-          <span className="font-semibold">FindMyWhy®</span> isn't Therapy or Coaching — it's your brain with super-charged AI Clarity that can help you to make sense of your own thoughts.
-        </p>
+      {/* Main beige section */}
+      <div className="bg-[#FFF2E6] flex-1 flex flex-col items-center pt-20 pb-8">
+        <div className="max-w-2xl w-full px-4 space-y-6">
+          <div className="space-y-3">
+            {/* H1: What's on your mind? */}
+            <h1 className="fmy-h1 text-center text-5xl md:text-6xl leading-[1.08] text-[#323332]">
+              What's on your mind?
+            </h1>
+
+            {/* Signpost icon */}
+            <div className="flex justify-center">
+              <img src={signpostIcon} alt="Signpost" className="w-24 h-24" />
+            </div>
+          </div>
+
+          {/* Copy block */}
+          <div className="max-w-xl mx-auto space-y-4 text-left">
+            <p className="text-[20px] font-semibold text-neutral-800">
+              FindMyWhy? was created for clarity.
+            </p>
+            <p className="text-[18px] leading-7 text-neutral-700">
+              FMY? helps you work through one specific question by asking a series of short, easily answered prompts, then responds with a decision.
+            </p>
+            <ul className="text-[18px] leading-7 text-neutral-700 space-y-1">
+              <li>• Not therapy or coaching</li>
+              <li>• Not journaling</li>
+              <li>• Not preachy or judgmental</li>
+            </ul>
+          </div>
+
+          {/* Stopwatch icon with rotation and shadow */}
+          <div className="flex justify-center relative my-4">
+            <div className="relative">
+              {/* Subtle shadow ellipse below */}
+              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-12 h-2 bg-gray-400/15 rounded-full blur-sm"></div>
+              <img 
+                src={stopwatchIcon} 
+                alt="Stopwatch" 
+                className="w-20 h-20 relative transform -rotate-3"
+              />
+            </div>
+          </div>
+
+          {/* H2: Here's where we start! */}
+          <h2 className="fmy-h2 text-center text-3xl md:text-4xl text-[#323332]">
+            Here's where we start!
+          </h2>
+
+          {/* Three-button row */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-2xl mx-auto">
+            <button
+              onClick={() => {
+                enterIC?.();
+              }}
+              className="px-6 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors w-full sm:w-auto min-w-[160px]"
+            >
+              Quick Clarity
+            </button>
+            <button
+              onClick={() => {
+                enterDM?.();
+              }}
+              className="px-6 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors w-full sm:w-auto min-w-[160px]"
+            >
+              Deeper Meaning
+            </button>
+            <button
+              onClick={() => {
+                onEnter15SQ?.();
+              }}
+              className="px-6 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors w-full sm:w-auto min-w-[160px]"
+            >
+              Silly Questions
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Lower white section with finger icon and footer */}
+      <div className="bg-white py-8">
+        <div className="max-w-2xl mx-auto px-4 space-y-6">
+          {/* Finger icon */}
+          <div className="flex justify-center">
+            <img src={fingerIcon} alt="Finger" className="w-20 h-20" />
+          </div>
+          
+          {/* Footer text */}
+          <p className="text-sm text-gray-700 text-center">
+            FindMyWhy?® isn't Therapy or Coaching — it's your brain with super-charged AI Clarity to help you to make sense of your own thinking.
+          </p>
+        </div>
       </div>
     </div>
   );
