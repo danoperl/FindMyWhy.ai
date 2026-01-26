@@ -1,11 +1,25 @@
 /* Tailwind v4: do not replace with @tailwind directives */
 @import "tailwindcss";
 
-/* Typography Contract v65.x: Source Sans 3 as global default */
+/* v70.x Typography Contract
+   Headlines: Picholine Antique
+   UI / Body / Buttons: Manrope
+*/
+
+/* ---- Font alias: map requested family -> Adobe's loaded family ---- */
+@font-face {
+  font-family: "picholine-antique";
+  src: local("picholine-antique-variable");
+  font-weight: 100 900;
+  font-style: normal;
+}
+/* --------------------------------------------------------------- */
+
+/* Global UI font (v70.x): Manrope */
 html, body, #root {
   height: 100%;
   background: linear-gradient(135deg, #eff6ff, #e0e7ff);
-  font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  font-family: "Manrope", system-ui, -apple-system, sans-serif;
 }
 
 /* Manrope for structural hierarchy (h1, h2, h3) */
@@ -18,3 +32,40 @@ h1.fmy-brand-logotype,
 .fmy-brand-logotype {
   font-family: Helvetica, Arial, sans-serif;
 }
+
+/* Entry Hatch headline typography (v70.3) */
+h1.fmy-h1,
+.fmy-h1,
+h2.fmy-h2,
+.fmy-h2 {
+  font-family: "picholine-antique-variable", serif !important;
+  font-weight: 350 !important; /* Regular */
+}
+
+/* Subhead typography (Manrope) */
+.fmy-subhead,
+.fmy-h3 {
+  font-family: "Manrope", system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+}
+
+/* Body copy typography (Manrope) */
+.fmy-body,
+.fmy-body p {
+  font-family: "Manrope", system-ui, -apple-system, sans-serif;
+  font-weight: 400;
+  color: #4d4d4d; /* your gray */
+}
+
+/* Button / CTA typography (Manrope) */
+.fmy-btn,
+.fmy-btn-primary,
+.fmy-btn-secondary,
+button {
+  font-family: "Manrope", system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+}
+
+
+
+
