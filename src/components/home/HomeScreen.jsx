@@ -44,7 +44,7 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
       {/* Main beige section */}
       <div className="bg-[#FFF2E6] flex-1 flex flex-col items-center pt-20 pb-8">
         <div className="max-w-2xl w-full px-4 space-y-6">
-          <div className="space-y-3">
+          <div className="space-y-[60px]">
             {/* H1: What's on your mind? */}
             <h1 className="fmy-h1 text-center text-5xl md:text-6xl leading-[1.08] text-[#323332]">
               What's on your mind?
@@ -57,8 +57,8 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
           </div>
 
           {/* Copy block */}
-          <div className="max-w-xl mx-auto space-y-4 text-left">
-            <p className="text-[20px] font-semibold text-neutral-800">
+          <div className="mx-auto max-w-md px-6 sm:px-8 space-y-4 text-left mb-[45px]">
+            <p className="text-[20px] font-extrabold text-neutral-800">
               FindMyWhy? was created for clarity.
             </p>
             <p className="text-[18px] leading-7 text-neutral-700">
@@ -90,46 +90,84 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
           </h2>
 
           {/* Three-button row */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-2xl mx-auto">
-            <button
-              onClick={() => {
-                enterIC?.();
-              }}
-              className="px-6 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors w-full sm:w-auto min-w-[160px]"
-            >
-              Quick Clarity
-            </button>
-            <button
-              onClick={() => {
-                enterDM?.();
-              }}
-              className="px-6 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors w-full sm:w-auto min-w-[160px]"
-            >
-              Deeper Meaning
-            </button>
-            <button
-              onClick={() => {
-                onEnter15SQ?.();
-              }}
-              className="px-6 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors w-full sm:w-auto min-w-[160px]"
-            >
-              Silly Questions
-            </button>
+          <div className="max-w-2xl mx-auto">
+            {/* Mobile layout (default): 2 rows */}
+            <div className="flex flex-col gap-4 items-center md:hidden">
+              {/* Row 1 */}
+              <div className="flex flex-row gap-4 justify-center">
+                <button
+                  onClick={() => {
+                    enterIC?.();
+                  }}
+                  className="px-4 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors min-w-[160px]"
+                >
+                  Quick Clarity
+                </button>
+                <button
+                  onClick={() => {
+                    enterDM?.();
+                  }}
+                  className="px-4 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors min-w-[160px]"
+                >
+                  Deeper Meaning
+                </button>
+              </div>
+
+              {/* Row 2 */}
+              <div className="flex justify-center">
+                <button
+                  onClick={() => {
+                    onEnter15SQ?.();
+                  }}
+                  className="px-4 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors min-w-[160px]"
+                >
+                  Silly Questions
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop layout (md+): 1 row */}
+            <div className="hidden md:flex gap-4 justify-center items-center">
+              <button
+                onClick={() => {
+                  enterIC?.();
+                }}
+                className="px-4 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors min-w-[160px]"
+              >
+                Quick Clarity
+              </button>
+              <button
+                onClick={() => {
+                  enterDM?.();
+                }}
+                className="px-4 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors min-w-[160px]"
+              >
+                Deeper Meaning
+              </button>
+              <button
+                onClick={() => {
+                  onEnter15SQ?.();
+                }}
+                className="px-4 py-3 bg-[#442CD8] text-white font-semibold rounded-lg transition-colors min-w-[160px]"
+              >
+                Silly Questions
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Lower white section with finger icon and footer */}
       <div className="bg-white py-8">
-        <div className="max-w-2xl mx-auto px-4 space-y-6">
+        <div className="max-w-2xl mx-auto px-[59px] sm:px-[75px] space-y-6">
           {/* Finger icon */}
           <div className="flex justify-center">
             <img src={fingerIcon} alt="Finger" className="w-20 h-20" />
           </div>
           
           {/* Footer text */}
-          <p className="text-sm text-gray-700 text-center">
-            FindMyWhy?® isn't Therapy or Coaching — it's your brain with super-charged AI Clarity to help you to make sense of your own thinking.
+          <p className="text-xs font-bold text-gray-700 text-center">
+            FindMyWhy?<span className="font-light">®</span> isn't Therapy or Coaching — it's your brain with super-charged AI Clarity to help you to make sense of your own thinking.
           </p>
         </div>
       </div>
