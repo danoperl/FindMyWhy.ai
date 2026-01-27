@@ -8,32 +8,32 @@ export default function DeeperMeaningApp_v60_4() {
     <div className="space-y-8">
       {/* Header */}
       <header className="space-y-2">
-        <h2 className="text-3xl font-semibold tracking-tight">
+        <h2 className="fmy-h2 text-3xl">
           Deeper Meaning Mode
         </h2>
-        <p className="text-sm text-slate-300">
+        <p className="text-sm font-manrope font-light text-gray-600">
           A structured, recursive flow to unpack the deeper "why" behind your decision,
           pattern, or nagging question.
         </p>
       </header>
 
       {/* DM3 – Why Chain */}
-      <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-md shadow-slate-900/50 space-y-4">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg space-y-4">
         <DM3WhyChain_v60_5c />
       </section>
 
       {/* DM4 – Pattern Recognition */}
-      <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-md shadow-slate-900/50 space-y-4">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg space-y-4">
         <DM4PatternRecognition_v60_6a />
       </section>
 
       {/* DM5 – Insight */}
-      <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-md shadow-slate-900/50 space-y-4">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg space-y-4">
         <DM5Insight_v60_6b />
       </section>
 
       {/* DM6 – Closure */}
-      <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-md shadow-slate-900/50 space-y-4">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg space-y-4">
         <DM6Closure_v60_6b />
       </section>
     </div>

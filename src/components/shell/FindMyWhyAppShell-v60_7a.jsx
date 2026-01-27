@@ -652,11 +652,11 @@ function DeeperMeaningContent({ onSaveToLog }) {
       <div ref={contentRef} className="space-y-6">
         <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 animate-fadeIn">
           <div className="mb-6">
-            <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors">
+            <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-manrope font-extrabold text-sm transition-colors">
               <HelpCircle size={18} />What is Deeper Meaning Mode?
             </button>
             {showInfo && (
-              <div className="mt-3 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg text-sm text-gray-700 animate-fadeIn">
+              <div className="mt-3 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg text-sm font-manrope font-light text-gray-700 animate-fadeIn">
                 <ul className="space-y-2">
                   <li>• Goes beyond quick decisions into deeper patterns.</li>
                   <li>• Uses a structured WHY-Chain to explore meaning safely.</li>
@@ -669,30 +669,30 @@ function DeeperMeaningContent({ onSaveToLog }) {
           <div className="border-b border-gray-200 my-6" />
           <div className="space-y-5">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900">What's the deeper question on your mind?</h2>
-              <p className="text-sm text-gray-600 mt-1">Share something you'd like to explore.</p>
+              <h2 className="fmy-h2 text-3xl text-gray-900">What's the deeper question on your mind?</h2>
+              <p className="text-sm font-manrope font-light text-gray-600 mt-1">Share something you'd like to explore.</p>
             </div>
             <div className="relative">
               <textarea value={textareaValue} onChange={(e) => { setTextareaValue(e.target.value.slice(0, MAX_CHARS)); if (validationError) setValidationError(''); }} placeholder="e.g., 'Why do I always feel like I'm falling behind?'" className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 text-gray-900 min-h-[120px] resize-y transition-shadow ${validationError ? 'border-red-300' : 'border-gray-300'}`} maxLength={MAX_CHARS} />
               <div className="absolute bottom-3 right-3 text-xs text-gray-400">{textareaValue.length}/{MAX_CHARS}</div>
             </div>
-            {validationError && <p className="text-xs text-red-500">{validationError}</p>}
+            {validationError && <p className="text-xs font-manrope font-light text-red-500">{validationError}</p>}
             <div className="space-y-2">
-              <p className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Or try one of these:</p>
+              <p className="text-xs font-manrope font-light text-gray-500 uppercase tracking-wide">Or try one of these:</p>
               <div className="flex flex-wrap gap-2">
                 {EXAMPLE_PROMPTS.map((prompt, idx) => (
-                  <button key={idx} onClick={() => { setTextareaValue(prompt); setValidationError(''); }} className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs rounded-full border border-indigo-200 transition-colors">{prompt}</button>
+                  <button key={idx} onClick={() => { setTextareaValue(prompt); setValidationError(''); }} className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-manrope font-extrabold rounded-full border border-indigo-200 transition-colors">{prompt}</button>
                 ))}
               </div>
             </div>
           </div>
           <div className="border-b border-gray-200 my-6" />
           <PipelineStrip currentStage={currentStage} />
-          <p className="text-xs text-gray-500 text-center mt-3">3–5 min · Stop anytime</p>
+          <p className="text-xs font-manrope font-light text-gray-500 text-center mt-3">3–5 min · Stop anytime</p>
           <div className="border-b border-gray-200 my-6" />
           {/* DM0: Forward CTA only (no Back) */}
           <div className="flex justify-center">
-            <button onClick={handleBegin} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
+            <button onClick={handleBegin} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-manrope font-extrabold rounded-lg flex items-center justify-center gap-2 transition-colors">
               <span>{dmSession ? 'Continue' : 'Begin Deeper Meaning'}</span>
               <ArrowRight size={18} />
             </button>
@@ -701,12 +701,12 @@ function DeeperMeaningContent({ onSaveToLog }) {
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
           <button onClick={() => setShowDebug(!showDebug)} className="w-full px-5 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors text-left">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Debug (dev view)</span>
+            <span className="text-xs font-manrope font-light text-gray-500 uppercase tracking-wide">Debug (dev view)</span>
             {showDebug ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
           </button>
           {showDebug && (
             <div className="p-4 border-t border-gray-100">
-              <p className="text-xs text-gray-500 text-center">{dmSession ? `Session exists: ${dmSession.session_id}` : 'No session initialized yet.'}</p>
+              <p className="text-xs font-manrope font-light text-gray-500 text-center">{dmSession ? `Session exists: ${dmSession.session_id}` : 'No session initialized yet.'}</p>
             </div>
           )}
         </div>
@@ -727,36 +727,36 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM1</span>
-                <h2 className="text-3xl font-bold text-gray-900">Surface Mapping</h2>
+                <h2 className="fmy-h2 text-3xl text-gray-900">Surface Mapping</h2>
               </div>
-              <p className="text-sm text-gray-600">We'll clarify what this question is really about.</p>
+              <p className="text-sm font-manrope font-light text-gray-600">We'll clarify what this question is really about.</p>
             </div>
             <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
-              <p className="text-xs font-semibold text-indigo-800 uppercase mb-1 tracking-wide">Your Question</p>
+              <p className="text-xs font-manrope font-light text-indigo-800 uppercase mb-1 tracking-wide">Your Question</p>
               <p className="text-gray-900 italic">"{dmSession.surface_question}"</p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-gray-700">What domain does this seem to live in?</p>
-              <p className="text-sm text-gray-500 italic mt-1 mb-2">Choose one.</p>
+              <p className="text-sm font-manrope font-extrabold text-gray-700">What domain does this seem to live in?</p>
+              <p className="text-sm font-manrope font-light text-gray-500 italic mt-1 mb-2">Choose one.</p>
               <div className="flex flex-wrap gap-2">
                 {DOMAIN_PILL_CONFIG.map((domain) => {
                   const isSelected = selectedDomain === domain.label;
                   return (
-                    <button key={domain.label} onClick={() => handleDomainSelect(domain.label)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${isSelected ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{domain.label}</button>
+                    <button key={domain.label} onClick={() => handleDomainSelect(domain.label)} className={`px-3 py-1.5 rounded-full text-xs font-manrope font-extrabold transition-all duration-200 ${isSelected ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{domain.label}</button>
                   );
                 })}
               </div>
             </div>
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-sm text-gray-700 leading-relaxed">In this step, we're mapping the surface of your question — not to rush toward answers, but to make sure we're exploring the right territory.</p>
+              <p className="text-sm font-manrope font-light text-gray-700 leading-relaxed">In this step, we're mapping the surface of your question — not to rush toward answers, but to make sure we're exploring the right territory.</p>
             </div>
             {/* DM1: Back + Forward */}
             <div className="flex justify-center gap-3 pt-2">
-              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
+              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-manrope font-extrabold rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
                 <ArrowLeft size={16} />
                 <span>Back</span>
               </button>
-              <button onClick={handleDM1Continue} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
+              <button onClick={handleDM1Continue} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-manrope font-extrabold rounded-lg flex items-center justify-center gap-2 transition-colors">
                 <span>Continue to DM2</span>
                 <ArrowRight size={18} />
               </button>
@@ -780,29 +780,29 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM2</span>
-                <h2 className="text-3xl font-bold text-gray-900">Anchor Detection</h2>
+                <h2 className="fmy-h2 text-3xl text-gray-900">Anchor Detection</h2>
               </div>
-              <p className="text-sm text-gray-600">We're looking for identity, values, and relational anchors.</p>
+              <p className="text-sm font-manrope font-light text-gray-600">We're looking for identity, values, and relational anchors.</p>
             </div>
             <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
-              <p className="text-xs font-semibold text-indigo-800 uppercase mb-1 tracking-wide">Your Question</p>
+              <p className="text-xs font-manrope font-light text-indigo-800 uppercase mb-1 tracking-wide">Your Question</p>
               <p className="text-gray-900 italic">"{dmSession.surface_question}"</p>
             </div>
             <div className="space-y-4">
-              <p className="text-sm font-semibold text-gray-700">Types of anchors we look for:</p>
+              <p className="text-sm font-manrope font-extrabold text-gray-700">Types of anchors we look for:</p>
               <div className="grid gap-3">
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4"><p className="text-sm font-semibold text-purple-800">🪞 Identity Anchors</p><p className="text-xs text-purple-700 mt-1">Who you see yourself as, who you want to become</p></div>
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4"><p className="text-sm font-semibold text-amber-800">⚖️ Value Anchors</p><p className="text-xs text-amber-700 mt-1">What matters most to you, principles you live by</p></div>
-                <div className="bg-pink-50 border border-pink-200 rounded-lg p-4"><p className="text-sm font-semibold text-pink-800">🤝 Relational Anchors</p><p className="text-xs text-pink-700 mt-1">Key relationships, social roles, commitments</p></div>
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4"><p className="text-sm font-manrope font-extrabold text-purple-800">🪞 Identity Anchors</p><p className="text-xs font-manrope font-light text-purple-700 mt-1">Who you see yourself as, who you want to become</p></div>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4"><p className="text-sm font-manrope font-extrabold text-amber-800">⚖️ Value Anchors</p><p className="text-xs font-manrope font-light text-amber-700 mt-1">What matters most to you, principles you live by</p></div>
+                <div className="bg-pink-50 border border-pink-200 rounded-lg p-4"><p className="text-sm font-manrope font-extrabold text-pink-800">🤝 Relational Anchors</p><p className="text-xs font-manrope font-light text-pink-700 mt-1">Key relationships, social roles, commitments</p></div>
               </div>
             </div>
             {/* DM2: Back + Forward */}
             <div className="flex justify-center gap-3 pt-2">
-              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
+              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-manrope font-extrabold rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
                 <ArrowLeft size={16} />
                 <span>Back</span>
               </button>
-              <button onClick={handleDM2Continue} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
+              <button onClick={handleDM2Continue} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-manrope font-extrabold rounded-lg flex items-center justify-center gap-2 transition-colors">
                 <span>Continue to DM3</span>
                 <ArrowRight size={18} />
               </button>
@@ -837,14 +837,14 @@ function DeeperMeaningContent({ onSaveToLog }) {
               <div className="flex items-start gap-3">
                 <AlertCircle className="text-amber-600 mt-0.5 flex-shrink-0" size={20} />
                 <div>
-                  <p className="text-sm font-semibold text-amber-800 mb-2">Let's pause here.</p>
-                  <p className="text-sm text-amber-700 leading-relaxed">It sounds like you might be going through something difficult. This tool isn't designed for crisis support. If you're struggling, please reach out to someone who can help.</p>
+                  <p className="text-sm font-manrope font-extrabold text-amber-800 mb-2">Let's pause here.</p>
+                  <p className="text-sm font-manrope font-light text-amber-700 leading-relaxed">It sounds like you might be going through something difficult. This tool isn't designed for crisis support. If you're struggling, please reach out to someone who can help.</p>
                 </div>
               </div>
             </div>
             {/* Even in distress state, provide Back navigation */}
             <div className="flex justify-center gap-3 pt-4">
-              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
+              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-manrope font-extrabold rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
                 <ArrowLeft size={16} />
                 <span>Back</span>
               </button>
@@ -863,13 +863,13 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM3</span>
-                <h2 className="text-3xl font-bold text-gray-900">WHY-Chain Exploration</h2>
+                <h2 className="fmy-h2 text-3xl text-gray-900">WHY-Chain Exploration</h2>
               </div>
-              <p className="text-sm text-gray-600">We'll explore a few layers of "why" at your pace. You can stop anytime.</p>
+              <p className="text-sm font-manrope font-light text-gray-600">We'll explore a few layers of "why" at your pace. You can stop anytime.</p>
             </div>
             
             <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Progress</span>
+              <span className="text-xs font-manrope font-light text-gray-500 uppercase tracking-wide">Progress</span>
               <div className="flex gap-1.5">
                 {[0,1,2,3,4].map((step) => (
                   <div key={step} className={`w-8 h-2 rounded-full transition-colors duration-200 ${step < currentDepth ? 'bg-green-500' : step === currentDepth ? 'bg-indigo-500' : 'bg-gray-200'}`} />
@@ -881,18 +881,18 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div className="border-b border-gray-200" />
 
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase mb-1 tracking-wide">Your original question</p>
-              <p className="text-sm text-gray-800 italic">"{dmSession.surface_question}"</p>
+              <p className="text-xs font-manrope font-light text-gray-500 uppercase mb-1 tracking-wide">Your original question</p>
+              <p className="text-sm font-manrope font-light text-gray-800 italic">"{dmSession.surface_question}"</p>
             </div>
 
             {whyChain.length > 0 && (
               <div className="space-y-3">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Your WHY steps so far</p>
+                <p className="text-xs font-manrope font-light text-gray-500 uppercase tracking-wide">Your WHY steps so far</p>
                 <div className="space-y-2">
                   {whyChain.map((why, idx) => (
                     <div key={idx} className="flex gap-3 items-start animate-fadeIn">
                       <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">{idx + 1}</span>
-                      <p className="text-sm text-gray-700 leading-relaxed pt-0.5">{why}</p>
+                      <p className="text-sm font-manrope font-light text-gray-700 leading-relaxed pt-0.5">{why}</p>
                     </div>
                   ))}
                 </div>
@@ -906,8 +906,8 @@ function DeeperMeaningContent({ onSaveToLog }) {
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-700">Session paused. You can return to continue or move on.</p>
                 <div className="flex flex-wrap gap-3 mt-3">
-                  <button onClick={handleWhyResume} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors">Resume</button>
-                  <button onClick={handleDM3ToDM4} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors">Move to DM4</button>
+                  <button onClick={handleWhyResume} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-manrope font-extrabold rounded-lg transition-colors">Resume</button>
+                  <button onClick={handleDM3ToDM4} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-manrope font-extrabold rounded-lg transition-colors">Move to DM4</button>
                 </div>
               </div>
             )}
@@ -917,11 +917,11 @@ function DeeperMeaningContent({ onSaveToLog }) {
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle size={16} className="text-green-600" />
-                  <p className="text-sm font-medium text-green-800">
+                  <p className="text-sm font-manrope font-extrabold text-green-800">
                     WHY-Chain {chainState === 'capped' ? 'reached depth limit' : chainState === 'halted' ? 'paused early' : 'complete'} · {whyChain.length} step{whyChain.length !== 1 ? 's' : ''} captured.
                   </p>
                 </div>
-                <p className="text-xs text-green-700">You can continue to pattern recognition.</p>
+                <p className="text-xs font-manrope font-light text-green-700">You can continue to pattern recognition.</p>
               </div>
             )}
 
@@ -929,31 +929,31 @@ function DeeperMeaningContent({ onSaveToLog }) {
             {isActive && (
               <div className="space-y-5">
                 <div>
-                  <label className="text-sm font-semibold text-gray-700 block mb-2">Next WHY</label>
+                  <label className="text-sm font-manrope font-extrabold text-gray-700 block mb-2">Next WHY</label>
                   <div className="relative">
                     <textarea value={whyInput} onChange={(e) => { setWhyInput(e.target.value.slice(0, WHY_MAX_CHARS)); if (whyValidationError) setWhyValidationError(''); if (similarityWarning) setSimilarityWarning(false); }} placeholder="Write whatever feels honest. There's no right answer." className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-gray-900 min-h-[80px] resize-y transition-shadow ${whyValidationError ? 'border-red-300' : 'border-gray-300'}`} maxLength={WHY_MAX_CHARS} />
                     <div className="absolute bottom-3 right-3 text-xs text-gray-400">{whyInput.length}/{WHY_MAX_CHARS}</div>
                   </div>
-                  {whyValidationError && <p className="text-xs text-red-500 mt-1">{whyValidationError}</p>}
-                  {similarityWarning && <p className="text-xs text-amber-600 mt-1">This sounds similar to your last step. You can add it anyway or pause here.</p>}
+                  {whyValidationError && <p className="text-xs font-manrope font-light text-red-500 mt-1">{whyValidationError}</p>}
+                  {similarityWarning && <p className="text-xs font-manrope font-light text-amber-600 mt-1">This sounds similar to your last step. You can add it anyway or pause here.</p>}
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <button onClick={handleAddWhyStep} className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg transition-colors">Add this step</button>
-                  <button onClick={handleWhyComplete} className="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors">I'm done for now</button>
-                  <button onClick={handleWhyPause} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors">Pause here</button>
+                  <button onClick={handleAddWhyStep} className="px-5 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white font-manrope font-extrabold rounded-lg transition-colors">Add this step</button>
+                  <button onClick={handleWhyComplete} className="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-manrope font-extrabold rounded-lg transition-colors">I'm done for now</button>
+                  <button onClick={handleWhyPause} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-manrope font-extrabold rounded-lg border border-gray-300 transition-colors">Pause here</button>
                 </div>
               </div>
             )}
 
             {/* DM3: NAVIGATION - Back always visible, Forward when chain complete */}
             <div className="flex justify-center gap-3 pt-2">
-              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
+              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-manrope font-extrabold rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
                 <ArrowLeft size={16} />
                 <span>Back</span>
               </button>
               {/* Show explicit forward CTA when chain is complete (not stalled - stalled has its own buttons above) */}
               {isChainComplete && !isStalled && (
-                <button onClick={handleDM3ToDM4} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
+                <button onClick={handleDM3ToDM4} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-manrope font-extrabold rounded-lg flex items-center justify-center gap-2 transition-colors">
                   <span>Continue to Patterns (DM4)</span>
                   <ArrowRight size={18} />
                 </button>
@@ -983,31 +983,31 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM4</span>
-                <h2 className="text-3xl font-bold text-gray-900">Pattern Recognition</h2>
+                <h2 className="fmy-h2 text-3xl text-gray-900">Pattern Recognition</h2>
               </div>
-              <p className="text-sm text-gray-600">Here's a neutral look at some themes in what you wrote.</p>
+              <p className="text-sm font-manrope font-light text-gray-600">Here's a neutral look at some themes in what you wrote.</p>
             </div>
 
             {chainState === 'complete' && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
                 <CheckCircle size={18} className="text-green-600 flex-shrink-0" />
-                <p className="text-sm text-green-800">WHY-Chain Complete · You explored {whyChain.length} step{whyChain.length !== 1 ? 's' : ''}.</p>
+                <p className="text-sm font-manrope font-light text-green-800">WHY-Chain Complete · You explored {whyChain.length} step{whyChain.length !== 1 ? 's' : ''}.</p>
               </div>
             )}
             {chainState === 'capped' && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3">
                 <TrendingUp size={18} className="text-amber-600 flex-shrink-0" />
-                <p className="text-sm text-amber-800">WHY-Chain Reached the Depth Limit · We'll work with what you shared.</p>
+                <p className="text-sm font-manrope font-light text-amber-800">WHY-Chain Reached the Depth Limit · We'll work with what you shared.</p>
               </div>
             )}
 
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Your WHY-Chain</p>
+              <p className="text-xs font-manrope font-light text-gray-500 uppercase tracking-wide">Your WHY-Chain</p>
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2 max-h-48 overflow-y-auto">
                 {whyChain.map((why, idx) => (
                   <div key={idx} className="flex gap-3 items-start">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-xs font-semibold flex items-center justify-center">{idx + 1}</span>
-                    <p className="text-sm text-gray-700">{why}</p>
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-xs font-manrope font-extrabold flex items-center justify-center">{idx + 1}</span>
+                    <p className="text-sm font-manrope font-light text-gray-700">{why}</p>
                   </div>
                 ))}
               </div>
@@ -1016,28 +1016,28 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div className="border-b border-gray-200" />
 
             <div className="space-y-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Pattern Highlights</p>
+              <p className="text-xs font-manrope font-light text-gray-500 uppercase tracking-wide">Pattern Highlights</p>
               {patterns.length === 0 ? (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600">No clear patterns surfaced. That's okay — sometimes a question is still forming.</p>
+                  <p className="text-sm font-manrope font-light text-gray-600">No clear patterns surfaced. That's okay — sometimes a question is still forming.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {patterns.map((pattern, idx) => (
                     <div key={idx} className="border border-gray-200 rounded-lg p-5 space-y-3 hover:border-gray-300 transition-colors">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                        <h3 className="text-base font-semibold text-gray-900">{pattern.label}</h3>
+                        <h3 className="text-base font-manrope font-extrabold text-gray-900">{pattern.label}</h3>
                         <div className="flex gap-2 flex-shrink-0">
                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[pattern.category] || 'bg-gray-100 text-gray-600'}`}>{pattern.category}</span>
                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STRENGTH_COLORS[pattern.strength]}`}>{pattern.strength}</span>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600">{pattern.description}</p>
+                      <p className="text-sm font-manrope font-light text-gray-600">{pattern.description}</p>
                       {pattern.evidence.length > 0 && (
                         <div className="space-y-1.5">
-                          <p className="text-xs font-semibold text-gray-500">Evidence from your WHY-Chain:</p>
+                          <p className="text-xs font-manrope font-light text-gray-500">Evidence from your WHY-Chain:</p>
                           {pattern.evidence.map((line, lineIdx) => (
-                            <p key={lineIdx} className="text-xs text-gray-500 italic pl-3 border-l-2 border-gray-200">"{line}"</p>
+                            <p key={lineIdx} className="text-xs font-manrope font-light text-gray-500 italic pl-3 border-l-2 border-gray-200">"{line}"</p>
                           ))}
                         </div>
                       )}
@@ -1048,18 +1048,18 @@ function DeeperMeaningContent({ onSaveToLog }) {
             </div>
 
             <div className="text-center">
-              <p className="text-xs text-gray-500">Confidence in these patterns: <span className="font-semibold">{confidenceLabel(confidence)}</span></p>
+              <p className="text-xs font-manrope font-light text-gray-500">Confidence in these patterns: <span className="font-manrope font-extrabold">{confidenceLabel(confidence)}</span></p>
             </div>
 
             <div className="border-b border-gray-200" />
 
             {/* DM4: Back + Forward */}
             <div className="flex justify-center gap-3">
-              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
+              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-manrope font-extrabold rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
                 <ArrowLeft size={16} />
                 <span>Back</span>
               </button>
-              <button onClick={handleDM4Continue} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
+              <button onClick={handleDM4Continue} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-manrope font-extrabold rounded-lg flex items-center justify-center gap-2 transition-colors">
                 <span>Continue to Insight (DM5)</span>
                 <ArrowRight size={18} />
               </button>
@@ -1090,24 +1090,24 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM5</span>
-                <h2 className="text-3xl font-bold text-gray-900">Insight</h2>
+                <h2 className="fmy-h2 text-3xl text-gray-900">Insight</h2>
               </div>
-              <p className="text-sm text-gray-600">Here's a neutral look at the themes in your reflection.</p>
+              <p className="text-sm font-manrope font-light text-gray-600">Here's a neutral look at the themes in your reflection.</p>
             </div>
 
             <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-xl p-6">
-              <p className="text-xs font-semibold text-indigo-600 uppercase mb-3 tracking-wide">Based on what you shared</p>
-              <p className="text-lg text-gray-900 leading-relaxed font-medium">
+              <p className="text-xs font-manrope font-light text-indigo-600 uppercase mb-3 tracking-wide">Based on what you shared</p>
+              <p className="text-lg font-manrope font-light text-gray-900 leading-relaxed">
                 {activeInsight?.text || synthesisCore}
               </p>
               {activeInsight && (
-                <p className="text-xs text-indigo-500 mt-3 italic">Style: {activeInsight.style}</p>
+                <p className="text-xs font-manrope font-light text-indigo-500 mt-3 italic">Style: {activeInsight.style}</p>
               )}
             </div>
 
             {insightDrafts.length > 1 && (
               <div className="flex justify-center">
-                <button onClick={cycleInsight} className="flex items-center gap-2 px-4 py-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
+                <button onClick={cycleInsight} className="flex items-center gap-2 px-4 py-2 text-sm text-indigo-600 hover:text-indigo-700 font-manrope font-extrabold transition-colors">
                   <RefreshCw size={16} />
                   See another wording ({activeInsightIndex + 1}/{insightDrafts.length})
                 </button>
@@ -1117,8 +1117,8 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div className="border-b border-gray-200" />
 
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Your Exploration So Far</p>
-              <ul className="text-sm text-gray-700 space-y-1">
+              <p className="text-xs font-manrope font-light text-gray-500 uppercase tracking-wide">Your Exploration So Far</p>
+              <ul className="text-sm font-manrope font-light text-gray-700 space-y-1">
                 <li>WHY steps explored: {whyChain.length}</li>
                 <li>Patterns detected: {patterns.length}</li>
                 <li>Chain state: {dmSession.chain_state}</li>
@@ -1129,11 +1129,11 @@ function DeeperMeaningContent({ onSaveToLog }) {
 
             {/* DM5: Back + Forward */}
             <div className="flex justify-center gap-3">
-              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
+              <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-manrope font-extrabold rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
                 <ArrowLeft size={16} />
                 <span>Back</span>
               </button>
-              <button onClick={handleDM5Continue} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
+              <button onClick={handleDM5Continue} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-manrope font-extrabold rounded-lg flex items-center justify-center gap-2 transition-colors">
                 <span>Continue to Closure (DM6)</span>
                 <ArrowRight size={18} />
               </button>
@@ -1176,17 +1176,17 @@ function DeeperMeaningContent({ onSaveToLog }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-full">DM6</span>
-                <h2 className="text-3xl font-bold text-gray-900">Closure</h2>
+                <h2 className="fmy-h2 text-3xl text-gray-900">Closure</h2>
               </div>
-              <p className="text-sm text-gray-600">A brief reflection on where you've landed for now.</p>
+              <p className="text-sm font-manrope font-light text-gray-600">A brief reflection on where you've landed for now.</p>
             </div>
             
             <div className="bg-green-50 border border-green-200 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle size={18} className="text-green-600" />
-                <p className="text-sm font-semibold text-green-800">Exploration Complete</p>
+                <p className="text-sm font-manrope font-extrabold text-green-800">Exploration Complete</p>
               </div>
-              <ul className="text-sm text-green-700 space-y-1">
+              <ul className="text-sm font-manrope font-light text-green-700 space-y-1">
                 <li>• WHY steps explored: {whyChain.length}</li>
                 <li>• Patterns detected: {patterns.length}</li>
                 <li>• Insight generated: {synthesisCore ? '✓' : '—'}</li>
@@ -1194,8 +1194,8 @@ function DeeperMeaningContent({ onSaveToLog }) {
             </div>
 
             <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
-              <p className="text-xs font-semibold text-gray-500 uppercase mb-3 tracking-wide">Something you might hold lightly from this reflection:</p>
-              <p className="text-base text-gray-800 leading-relaxed">
+              <p className="text-xs font-manrope font-light text-gray-500 uppercase mb-3 tracking-wide">Something you might hold lightly from this reflection:</p>
+              <p className="text-base font-manrope font-light text-gray-800 leading-relaxed">
                 {closureRec}
               </p>
             </div>
@@ -1205,21 +1205,21 @@ function DeeperMeaningContent({ onSaveToLog }) {
         {/* Action Buttons */}
         <div className="flex flex-col items-center gap-3">
           {!saved ? (
-            <button onClick={handleSaveJourney} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
+            <button onClick={handleSaveJourney} className="px-6 py-3 bg-indigo-700 hover:bg-indigo-800 text-white font-manrope font-extrabold rounded-lg flex items-center justify-center gap-2 transition-colors">
               <BookOpen size={18} />
               <span>Save this journey</span>
             </button>
           ) : (
-            <p className="text-sm text-gray-600">Saved to log.</p>
+            <p className="text-sm font-manrope font-light text-gray-600">Saved to log.</p>
           )}
           
           {/* DM6: Back + Reset (no forward) */}
           <div className="flex gap-3">
-            <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
+            <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-manrope font-extrabold rounded-lg border border-gray-300 flex items-center gap-2 transition-colors">
               <ArrowLeft size={16} />
               <span>Back</span>
             </button>
-            <button onClick={handleReset} className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
+            <button onClick={handleReset} className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-manrope font-extrabold rounded-lg flex items-center justify-center gap-2 transition-colors">
               <RotateCcw size={18} />
               <span>Start a New Question</span>
             </button>
@@ -1228,7 +1228,7 @@ function DeeperMeaningContent({ onSaveToLog }) {
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
           <button onClick={() => setShowDebug(!showDebug)} className="w-full px-5 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors text-left">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">Debug (dev view)<span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-normal normal-case">DM6</span></span>
+            <span className="text-xs font-manrope font-light text-gray-500 uppercase tracking-wide flex items-center gap-2">Debug (dev view)<span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-normal normal-case">DM6</span></span>
             {showDebug ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
           </button>
           {showDebug && (
@@ -1291,7 +1291,7 @@ export default function FindMyWhyAppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className={`min-h-screen ${activeMode === 'deeper_meaning' ? 'bg-[#fff2e6]' : 'bg-slate-950'} ${activeMode === 'deeper_meaning' ? 'text-gray-900' : 'text-slate-100'}`}>
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
         <style>{`
           @keyframes fadeIn {
