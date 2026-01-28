@@ -10,7 +10,7 @@ import FifteenSillyQuestions from "../home/FifteenSillyQuestions-v66.jsx";
 import { BackToHomePill } from "../ui";
 import LogModal from "../shared/LogModal.jsx";
 import { saveLogEntry, getLogEntries } from "../../lib/logbook.js";
-import magnifyingIcon from '../../assets/icons/magnifying.svg';
+import magnifyingIcon from '../../assets/icons/magnifying.svg?url';
 
 // =============================================================================
 // FLOW CONFIG (Slice A)
