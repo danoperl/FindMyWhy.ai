@@ -10,7 +10,6 @@ import FifteenSillyQuestions from "../home/FifteenSillyQuestions-v66.jsx";
 import { BackToHomePill } from "../ui";
 import LogModal from "../shared/LogModal.jsx";
 import { saveLogEntry, getLogEntries } from "../../lib/logbook.js";
-import magnifyingIcon from '../../assets/icons/magnifying.svg?url';
 
 // =============================================================================
 // FLOW CONFIG (Slice A)
@@ -1912,7 +1911,7 @@ export default function FindMyWhyApp() {
               className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
             />
             <div className="flex items-center justify-center gap-3 pr-[42px]">
-              <img src={magnifyingIcon} alt="" className="h-[86px] w-[86px]" />
+              <img src="/icons/magnifying.svg" alt="" className="h-[86px] w-[86px]" />
               <h1 className="fmy-brand-logotype text-4xl font-bold text-gray-900 tracking-tight">FindMyWhy?</h1>
             </div>
           </div>
