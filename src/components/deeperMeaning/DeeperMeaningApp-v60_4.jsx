@@ -11,7 +11,7 @@ export default function DeeperMeaningApp_v60_4() {
         <h2 className="fmy-h2 text-3xl">
           Deeper Meaning Mode
         </h2>
-        <p className="text-sm font-manrope font-light text-gray-600">
+        <p className="text-sm font-manrope font-light text-[#4d4d4d]">
           A structured, recursive flow to unpack the deeper "why" behind your decision,
           pattern, or nagging question.
         </p>

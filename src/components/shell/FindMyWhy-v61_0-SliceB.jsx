@@ -1902,17 +1902,17 @@ export default function FindMyWhyApp() {
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
           <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
           <div className="text-center mb-4">
-            <h1 className="fmy-brand-logotype text-4xl font-bold text-slate-900 tracking-tight">FindMyWhy?</h1>
-            <p className="text-sm font-manrope font-light text-slate-500 mt-3">BETA | 2025</p>
+            <h1 className="fmy-brand-logotype text-4xl font-bold text-gray-900 tracking-tight">FindMyWhy?</h1>
+            <p className="text-sm font-manrope font-light text-[#4d4d4d] mt-3">BETA | 2025</p>
           </div>
           
           <FmyCard>
             <div className="mb-6">
-              <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-manrope font-extrabold text-sm">
+              <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-2 text-[#442cd8] hover:text-[#442cd8]/80 font-manrope font-extrabold text-sm">
                 <HelpCircle size={18} />What is Deeper Meaning Mode?
               </button>
               {showInfo && (
-                <div className="mt-3 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-lg text-sm font-manrope font-light text-slate-700 animate-fadeIn">
+                <div className="mt-3 p-4 bg-[#facebb]/20 border-l-4 border-[#facebb] rounded-lg text-sm font-manrope font-light text-[#4d4d4d] animate-fadeIn">
                   <ul className="space-y-1">
                     <li>• Explores deeper patterns in your thinking</li>
                     <li>• Uses a structured WHY-Chain</li>
@@ -1927,7 +1927,7 @@ export default function FindMyWhyApp() {
             <div className="space-y-5">
               <div>
                 <h2 className="fmy-h2 text-2xl">What's really on your mind?</h2>
-                <p className="text-base font-manrope font-light text-slate-600 mt-1">Share something you'd like to explore.</p>
+                <p className="text-base font-manrope font-light text-[#4d4d4d] mt-1">Share something you'd like to explore.</p>
               </div>
               
               <div className="relative">
@@ -1935,17 +1935,17 @@ export default function FindMyWhyApp() {
                   value={surfaceQuestion}
                   onChange={(e) => setSurfaceQuestion(e.target.value.slice(0, 500))}
                   placeholder="e.g., 'Why do I always feel like I'm falling behind?'"
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-900 min-h-[100px] resize-y"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#442cd8] bg-white text-gray-900 min-h-[100px] resize-y"
                   maxLength={500}
                 />
-                <span className="absolute bottom-3 right-3 text-xs text-slate-400">{surfaceQuestion.length}/500</span>
+                <span className="absolute bottom-3 right-3 text-xs text-gray-400">{surfaceQuestion.length}/500</span>
               </div>
               
               <div className="space-y-2">
-                <p className="text-xs font-manrope font-light text-slate-500 uppercase tracking-wide">Or try one:</p>
+                <p className="text-xs font-manrope font-light text-[#4d4d4d] uppercase tracking-wide">Or try one:</p>
                 <div className="flex flex-wrap gap-2">
                   {EXAMPLE_PROMPTS.map((prompt, i) => (
-                    <button key={i} onClick={() => setSurfaceQuestion(prompt)} className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs rounded-full border border-indigo-200">
+                    <button key={i} onClick={() => setSurfaceQuestion(prompt)} className="px-3 py-1.5 bg-[#facebb]/20 hover:bg-[#facebb]/30 text-[#442cd8] text-xs rounded-full border border-[#facebb]">
                       {prompt}
                     </button>
                   ))}
@@ -1955,11 +1955,11 @@ export default function FindMyWhyApp() {
             
             <FmyCardDivider />
             <PipelineStrip currentStep={currentStep} />
-            <p className="text-xs font-manrope font-light text-slate-500 text-center mt-3">3–5 min · Stop anytime</p>
+            <p className="text-xs font-manrope font-light text-[#4d4d4d] text-center mt-3">3–5 min · Stop anytime</p>
             <FmyCardDivider />
             
             <div className="flex justify-center">
-              <button onClick={handleBegin} disabled={!surfaceQuestion.trim()} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-manrope font-extrabold rounded-lg flex items-center gap-2 transition-colors">
+              <button onClick={handleBegin} disabled={!surfaceQuestion.trim()} className="px-6 py-3 bg-[#442cd8] hover:bg-[#442cd8]/90 disabled:bg-slate-300 text-white font-manrope font-extrabold rounded-lg flex items-center gap-2 transition-colors">
                 Begin Deeper Meaning <ArrowRight size={18} />
               </button>
             </div>
@@ -1984,16 +1984,16 @@ export default function FindMyWhyApp() {
             <div className="space-y-6">
               <div>
                 <h2 className="fmy-h2 text-3xl mb-2">What areas of your life does this touch?</h2>
-                <p className="text-base font-manrope font-light text-slate-600">We'll clarify what this question is really about.</p>
+                <p className="text-base font-manrope font-light text-[#4d4d4d]">We'll clarify what this question is really about.</p>
               </div>
               
-              <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
-                <p className={`${fmyTheme.typography.label} text-indigo-800 mb-1`}>Your Question</p>
-                <p className="text-slate-900 italic">"{surfaceQuestion}"</p>
+              <div className="bg-[#facebb]/20 border-l-4 border-[#facebb] p-4 rounded-r-lg">
+                <p className={`${fmyTheme.typography.label} text-[#442cd8] mb-1`}>Your Question</p>
+                <p className="text-gray-900 italic">"{surfaceQuestion}"</p>
               </div>
               
               <div className="space-y-2">
-                <p className="text-sm font-manrope font-extrabold text-slate-700">What domain does this live in?</p>
+                <p className="text-sm font-manrope font-extrabold text-[#4d4d4d]">What domain does this live in?</p>
                 <div className="flex flex-wrap gap-2">
                   {DOMAINS.map((domain) => {
                     const isSelected = domainsSelected.includes(domain);
@@ -2019,14 +2019,14 @@ export default function FindMyWhyApp() {
                             }
                           }
                         }} 
-                        className={`px-3 py-1.5 rounded-full text-xs font-manrope font-extrabold transition-all ${isSelected ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-manrope font-extrabold transition-all ${isSelected ? 'bg-[#442cd8] text-white shadow-sm' : 'bg-gray-100 text-[#4d4d4d] hover:bg-gray-200'}`}
                       >
                         {domain}
                       </button>
                     );
                   })}
                 </div>
-                <p className="text-xs font-manrope font-light text-slate-500 mt-1">Choose up to 3</p>
+                <p className="text-xs font-manrope font-light text-[#4d4d4d] mt-1">Choose up to 3</p>
                 
                 {domainSelectionError && (
                   <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-lg mt-2">
@@ -2041,7 +2041,7 @@ export default function FindMyWhyApp() {
                       value={otherSpecify}
                       onChange={(e) => setOtherSpecify(e.target.value.slice(0, 100))}
                       placeholder="e.g., health, money, creativity"
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-900 text-sm"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#442cd8] bg-white text-gray-900 text-sm"
                       maxLength={100}
                     />
                   </div>
@@ -2049,7 +2049,7 @@ export default function FindMyWhyApp() {
               </div>
               
               <div className="flex justify-center pt-2">
-                <button onClick={handleDM1Continue} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-manrope font-extrabold rounded-lg flex items-center gap-2">
+                <button onClick={handleDM1Continue} className="px-6 py-3 bg-[#442cd8] hover:bg-[#442cd8]/90 text-white font-manrope font-extrabold rounded-lg flex items-center gap-2">
                   Continue <ArrowRight size={18} />
                 </button>
               </div>
@@ -2384,12 +2384,12 @@ export default function FindMyWhyApp() {
             <div className="space-y-6">
               <div>
                 <h2 className="fmy-h2 text-3xl mb-2">What this all adds up to…</h2>
-                <p className="text-base font-manrope font-light text-slate-600">A neutral look at the themes.</p>
+                <p className="text-base font-manrope font-light text-[#4d4d4d]">A neutral look at the themes.</p>
               </div>
               
               {dm5Status === 'loading' && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
-                  <p className="font-manrope font-light text-slate-600">Generating...</p>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center">
+                  <p className="font-manrope font-light text-[#4d4d4d]">Generating...</p>
                 </div>
               )}
               
@@ -2410,20 +2410,20 @@ export default function FindMyWhyApp() {
               )}
               
               {dm5Status === 'idle' && dm5OutputText && (
-                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-xl p-6">
-                  <p className="text-xs font-manrope font-light text-indigo-600 uppercase tracking-wide mb-3">Based on what you shared</p>
-                  <div className="text-lg font-manrope font-light text-slate-900 leading-relaxed whitespace-pre-wrap">{dm5OutputText}</div>
+                <div className="bg-[#facebb]/20 border-2 border-[#facebb] rounded-xl p-6">
+                  <p className="text-xs font-manrope font-light text-[#442cd8] uppercase tracking-wide mb-3">Based on what you shared</p>
+                  <div className="text-lg font-manrope font-light text-gray-900 leading-relaxed whitespace-pre-wrap">{dm5OutputText}</div>
                 </div>
               )}
               
               {dm5Status === 'idle' && !dm5OutputText && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
-                  <p className="font-manrope font-light text-slate-600">No insight generated yet.</p>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center">
+                  <p className="font-manrope font-light text-[#4d4d4d]">No insight generated yet.</p>
                 </div>
               )}
               
               <div className="flex justify-center gap-3 pt-2">
-                <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-manrope font-extrabold rounded-lg border border-slate-300 flex items-center gap-2">
+                <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-[#4d4d4d] font-manrope font-extrabold rounded-lg border border-gray-300 flex items-center gap-2">
                   <ArrowLeft size={16} /> Back
                 </button>
                 <button 
@@ -2431,8 +2431,8 @@ export default function FindMyWhyApp() {
                   disabled={dm5Status === 'loading' || !dm5OutputText}
                   className={`px-6 py-3 font-manrope font-extrabold rounded-lg flex items-center gap-2 transition-colors ${
                     dm5Status === 'loading' || !dm5OutputText
-                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-[#442cd8] hover:bg-[#442cd8]/90 text-white'
                   }`}
                 >
                   Continue <ArrowRight size={18} />
@@ -2477,16 +2477,16 @@ export default function FindMyWhyApp() {
             <div className="space-y-6">
               <div>
                 <h2 className="fmy-h2 text-3xl mb-2">Your clarity snapshot</h2>
-                <p className="text-base font-manrope font-light text-slate-600">Here's what has emerged, with a brief reflection on where you've landed.</p>
+                <p className="text-base font-manrope font-light text-[#4d4d4d]">Here's what has emerged, with a brief reflection on where you've landed.</p>
               </div>
               
               {/* Exploration Complete */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-5">
+              <div className="bg-[#fbe9a3]/30 border border-[#fbe9a3] rounded-lg p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle size={18} className="text-green-600" />
-                  <p className="text-sm font-manrope font-extrabold text-green-800">Exploration Complete</p>
+                  <CheckCircle size={18} className="text-[#442cd8]" />
+                  <p className="text-sm font-manrope font-extrabold text-[#442cd8]">Exploration Complete</p>
                 </div>
-                <ul className="text-sm font-manrope font-light text-green-700 space-y-1">
+                <ul className="text-sm font-manrope font-light text-[#4d4d4d] space-y-1">
                   <li>• WHY steps explored: {whyChain.length}</li>
                   <li>• Patterns detected: {patterns.length}</li>
                   <li>• Insight generated: ✓</li>
@@ -2495,16 +2495,16 @@ export default function FindMyWhyApp() {
               
               {/* DM5 Output (verbatim) */}
               {dm5OutputText && (
-                <div className="bg-white border-2 border-slate-200 rounded-xl p-6">
-                  <p className="text-xs font-manrope font-light text-slate-500 uppercase tracking-wide mb-3">Insight</p>
-                  <div className="text-base font-manrope font-light text-slate-800 leading-relaxed whitespace-pre-wrap">{dm5OutputText}</div>
+                <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                  <p className="text-xs font-manrope font-light text-[#4d4d4d] uppercase tracking-wide mb-3">Insight</p>
+                  <div className="text-base font-manrope font-light text-[#4d4d4d] leading-relaxed whitespace-pre-wrap">{dm5OutputText}</div>
                 </div>
               )}
               
               {/* Closure Recommendation */}
-              <div className="bg-white border-2 border-slate-200 rounded-xl p-6">
-                <p className="text-xs font-manrope font-light text-slate-500 uppercase tracking-wide mb-3">Something you might hold lightly:</p>
-                <p className="text-base font-manrope font-light text-slate-800 leading-relaxed">
+              <div className="bg-white border-2 border-gray-200 rounded-xl p-6">
+                <p className="text-xs font-manrope font-light text-[#4d4d4d] uppercase tracking-wide mb-3">Something you might hold lightly:</p>
+                <p className="text-base font-manrope font-light text-[#4d4d4d] leading-relaxed">
                   {holdLightlyText}
                 </p>
               </div>
@@ -2523,20 +2523,20 @@ export default function FindMyWhyApp() {
                 disabled={dmSaved}
                 className={`px-4 py-2 rounded-lg font-manrope font-extrabold text-sm flex items-center gap-2 transition-colors ${
                   dmSaved
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-[#442cd8] hover:bg-[#442cd8]/90 text-white'
                 }`}
               >
                 <BookOpen size={16} />
                 {dmSaved ? 'Saved' : 'Save to Log'}
               </button>
-              <button onClick={handleReset} className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-manrope font-extrabold rounded-lg flex items-center gap-2">
+              <button onClick={handleReset} className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-[#4d4d4d] font-manrope font-extrabold rounded-lg flex items-center gap-2">
                 <RotateCcw size={18} /> Start New
               </button>
             </div>
           </div>
           
-          <p className="text-center text-xs font-manrope font-light text-slate-500">
+          <p className="text-center text-xs font-manrope font-light text-[#4d4d4d]">
             FindMyWhy.ai · v63.1 · ©2025 | FMY?, LLC, all rights reserved.
           </p>
         </div>

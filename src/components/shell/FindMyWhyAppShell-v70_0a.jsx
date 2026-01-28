@@ -10,6 +10,7 @@ import FifteenSillyQuestions from "../home/FifteenSillyQuestions-v66.jsx";
 import { BackToHomePill } from "../ui";
 import LogModal from "../shared/LogModal.jsx";
 import { saveLogEntry, getLogEntries } from "../../lib/logbook.js";
+import magnifyingIcon from '../../assets/icons/magnifying.svg';
 
 // =============================================================================
 // FLOW CONFIG (Slice A)
@@ -78,30 +79,35 @@ function PipelineStrip({ currentStep }) {
   const allSteps = getAllStepsOrdered();
   return (
     <div className="space-y-3">
-      <p className={fmyTheme.typography.label}>Your Journey</p>
+      <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">Your journey</p>
       <div className="flex items-center justify-between overflow-x-auto pb-1 -mx-1 px-1">
         {allSteps.map((step) => {
           const isComplete = step.order < currentStep;
           const isCurrent = step.order === currentStep;
           const isFuture = step.order > currentStep;
           return (
-            <div key={step.idNumber} className="flex items-center">
-              <div className={`flex flex-col items-center min-w-[48px] transition-opacity duration-200 ${isFuture ? 'opacity-40' : 'opacity-100'}`}>
-                <span className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
-                  isCurrent ? 'bg-indigo-600 text-white shadow-sm' : 
-                  isComplete ? 'bg-green-500 text-white' : 
-                  'bg-slate-200 text-slate-500'
-                }`}>
-                  {isComplete ? <CheckCircle size={14} /> : step.idNumber}
-                </span>
-                <span className={`text-[10px] mt-1.5 transition-colors duration-200 ${isCurrent ? 'text-indigo-700 font-semibold' : 'text-slate-500'}`}>
-                  {step.label}
-                </span>
+              <div key={step.idNumber} className="flex items-center">
+                <div className={`flex flex-col items-center min-w-[48px] transition-opacity duration-200 ${isFuture ? 'opacity-40' : 'opacity-100'}`}>
+                  <span className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
+                    step.order === 0 ? 'bg-[#5ba7c1] text-white' :
+                    isCurrent ? 'bg-blue-600 text-white shadow-sm' : 
+                    isComplete ? 'bg-[#5ba7c1] text-white' : 
+                    'bg-[#91d3f6] text-gray-800'
+                  }`}>
+                    {isComplete ? <CheckCircle size={14} /> : step.idNumber}
+                  </span>
+                  <span className={`text-[10px] mt-1.5 transition-colors duration-200 ${
+                    step.order === 0 ? 'text-[#5ba7c1] font-bold' :
+                    isCurrent ? 'text-blue-700 font-semibold' : 
+                    'text-slate-500'
+                  }`}>
+                    {step.label}
+                  </span>
+                </div>
+                {step.order < allSteps.length - 1 && (
+                  <div className="w-4 h-0.5 mx-0.5 rounded-full bg-slate-200 transition-colors duration-200" />
+                )}
               </div>
-              {step.order < allSteps.length - 1 && (
-                <div className={`w-4 h-0.5 mx-0.5 rounded-full transition-colors duration-200 ${isComplete ? 'bg-green-400' : 'bg-slate-200'}`} />
-              )}
-            </div>
           );
         })}
       </div>
@@ -708,7 +714,7 @@ function detectAnchor(surfaceQuestion, domainsSelected = [], otherSpecify = '') 
   return 'relational';
 }
 const EXAMPLE_PROMPTS = [
-  "Why do I keep saying yes to things I don't want to do?",
+  "Example: Why do I keep saying yes to things I don't want to do?",
   "Why do I procrastinate on things that matter?",
   "I feel stuck but can't explain why"
 ];
@@ -1892,7 +1898,7 @@ export default function FindMyWhyApp() {
     // ─────────────────────────────────────────────────────────────────────────────
     // DM0 - Entry
     // ─────────────────────────────────────────────────────────────────────────────
-    if (currentStep === 0) {
+  if (currentStep === 0) {
     screenBody = (
       <div className="min-h-screen bg-[#fff2e6] p-4 sm:p-6">
         <style>{`
@@ -1900,16 +1906,21 @@ export default function FindMyWhyApp() {
           .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
         `}</style>
         <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
-          <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
-          <div className="text-center mb-4">
-            <h1 className="fmy-brand-logotype text-4xl font-bold text-gray-900 tracking-tight">FindMyWhy?</h1>
-            <p className="text-sm font-manrope font-light text-[#4d4d4d] mt-3">BETA | 2025</p>
+          <div className="text-center mb-4 relative">
+            <BackToHomePill
+              onClick={() => setScreen("HOME")}
+              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
+            />
+            <div className="flex items-center justify-center gap-3 pr-[42px]">
+              <img src={magnifyingIcon} alt="" className="h-[86px] w-[86px]" />
+              <h1 className="fmy-brand-logotype text-4xl font-bold text-gray-900 tracking-tight">FindMyWhy?</h1>
+            </div>
           </div>
           
           <FmyCard>
             <div className="mb-6">
-              <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-2 text-[#442cd8] hover:text-[#442cd8]/80 font-manrope font-extrabold text-sm">
-                <HelpCircle size={18} />What is Deeper Meaning Mode?
+              <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-2 text-[#5ba7c1] hover:text-[#5ba7c1]/80 text-base font-manrope font-semibold">
+                <HelpCircle size={18} className="text-[#5ba7c1]" />What is Deeper Meaning Mode?
               </button>
               {showInfo && (
                 <div className="mt-3 p-4 bg-[#facebb]/20 border-l-4 border-[#facebb] rounded-lg text-sm font-manrope font-light text-[#4d4d4d] animate-fadeIn">
@@ -1926,26 +1937,26 @@ export default function FindMyWhyApp() {
             
             <div className="space-y-5">
               <div>
-                <h2 className="fmy-h2 text-2xl">What's really on your mind?</h2>
-                <p className="text-base font-manrope font-light text-[#4d4d4d] mt-1">Share something you'd like to explore.</p>
+                <h2 className="fmy-h2 text-5xl leading-tight">What's really on your mind?</h2>
+                <p className="text-lg font-manrope font-light italic text-[#4d4d4d] mt-1">Share something you'd like to explore...</p>
               </div>
               
               <div className="relative">
                 <textarea
                   value={surfaceQuestion}
                   onChange={(e) => setSurfaceQuestion(e.target.value.slice(0, 500))}
-                  placeholder="e.g., 'Why do I always feel like I'm falling behind?'"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#442cd8] bg-white text-gray-900 min-h-[100px] resize-y"
+                  placeholder='Example: "Why do I always feel like I am falling behind?"'
+                  className="w-full px-4 py-3 border border-[#facebb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#442cd8] bg-yellow-200/25 text-gray-900 placeholder:text-[#4d4d4d] text-sm min-h-[100px] resize-y"
                   maxLength={500}
                 />
                 <span className="absolute bottom-3 right-3 text-xs text-gray-400">{surfaceQuestion.length}/500</span>
               </div>
               
               <div className="space-y-2">
-                <p className="text-xs font-manrope font-light text-[#4d4d4d] uppercase tracking-wide">Or try one:</p>
+                <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">Or try one of these...</p>
                 <div className="flex flex-wrap gap-2">
                   {EXAMPLE_PROMPTS.map((prompt, i) => (
-                    <button key={i} onClick={() => setSurfaceQuestion(prompt)} className="px-3 py-1.5 bg-[#facebb]/20 hover:bg-[#facebb]/30 text-[#442cd8] text-xs rounded-full border border-[#facebb]">
+                    <button key={i} onClick={() => setSurfaceQuestion(prompt)} className="px-3 py-1.5 bg-[#facebb]/50 hover:bg-[#facebb]/70 text-[#4d4d4d] text-xs rounded-lg border border-[#facebb]">
                       {prompt}
                     </button>
                   ))}
@@ -1955,7 +1966,6 @@ export default function FindMyWhyApp() {
             
             <FmyCardDivider />
             <PipelineStrip currentStep={currentStep} />
-            <p className="text-xs font-manrope font-light text-[#4d4d4d] text-center mt-3">3–5 min · Stop anytime</p>
             <FmyCardDivider />
             
             <div className="flex justify-center">
@@ -1964,6 +1974,7 @@ export default function FindMyWhyApp() {
               </button>
             </div>
           </FmyCard>
+          <p className="text-[10px] font-manrope font-light text-[#4d4d4d] text-right">v70_0a</p>
         </div>
       </div>
     );

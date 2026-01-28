@@ -20,14 +20,14 @@ export default function DM5Insight_v60_6b() {
         <span className="text-xs font-manrope font-light text-gray-500">v60.6b</span>
       </h3>
 
-      <p className="text-xs font-manrope font-light text-gray-600">
+      <p className="text-xs font-manrope font-light text-[#4d4d4d]">
         Based on the Why Chain and the patterns you noticed, what deeper meaning
         or theme is emerging for you?
       </p>
 
       {/* Insight text area */}
       <div className="space-y-1">
-        <label className="text-xs font-manrope font-light text-gray-600">
+        <label className="text-xs font-manrope font-light text-[#4d4d4d]">
           What's the deeper realization or truth here?
         </label>
         <textarea
@@ -41,7 +41,7 @@ export default function DM5Insight_v60_6b() {
 
       {/* Optional guiding reflection */}
       <div className="space-y-1">
-        <label className="text-xs font-manrope font-light text-gray-600">
+        <label className="text-xs font-manrope font-light text-[#4d4d4d]">
           If you were to look underneath that insight — what does it point to?
         </label>
         <textarea
@@ -60,7 +60,7 @@ export default function DM5Insight_v60_6b() {
             key={i}
             type="button"
             onClick={() => setReflection(s)}
-            className="px-3 py-1 rounded-full text-xs font-manrope font-extrabold border border-gray-300 bg-white text-gray-700 hover:border-indigo-500 hover:text-indigo-700 transition-colors"
+            className="px-3 py-1 rounded-full text-xs font-manrope font-extrabold border border-gray-300 bg-white text-[#4d4d4d] hover:border-[#442cd8] hover:text-[#442cd8] transition-colors"
           >
             {s}
           </button>
@@ -69,16 +69,16 @@ export default function DM5Insight_v60_6b() {
 
       {/* Preview summary */}
       <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-        <p className="text-[11px] font-manrope font-light uppercase tracking-wide text-gray-500 mb-1">
+        <p className="text-[11px] font-manrope font-light uppercase tracking-wide text-[#4d4d4d] mb-1">
           Insight Snapshot
         </p>
 
         {insight.trim() === "" && reflection.trim() === "" ? (
-          <p className="text-xs font-manrope font-light text-gray-500">
+          <p className="text-xs font-manrope font-light text-[#4d4d4d]">
             Your insight will appear here once you start writing.
           </p>
         ) : (
-          <div className="space-y-1 text-xs font-manrope font-light text-gray-700">
+          <div className="space-y-1 text-xs font-manrope font-light text-[#4d4d4d]">
             {insight.trim() && (
               <p>
                 <span className="font-manrope font-extrabold text-gray-900">Core Insight:</span>{" "}

@@ -13,14 +13,14 @@ export default function DM6Closure_v60_6b() {
         <span className="text-xs font-manrope font-light text-gray-500">v60.6b</span>
       </h3>
 
-      <p className="text-xs font-manrope font-light text-gray-600">
-        Let’s give this session a landing place. No big life vow — just a
+      <p className="text-xs font-manrope font-light text-[#4d4d4d]">
+        Let's give this session a landing place. No big life vow — just a
         grounded statement about what this insight means for you right now.
       </p>
 
       {/* Closure statement */}
       <div className="space-y-1">
-        <label className="text-xs font-manrope font-light text-gray-600">
+        <label className="text-xs font-manrope font-light text-[#4d4d4d]">
           If you had to put it in one sentence, what are you taking away from this?
         </label>
         <textarea
@@ -34,7 +34,7 @@ export default function DM6Closure_v60_6b() {
 
       {/* Small next step */}
       <div className="space-y-1">
-        <label className="text-xs font-manrope font-light text-gray-600">
+        <label className="text-xs font-manrope font-light text-[#4d4d4d]">
           What&apos;s one small step you&apos;re willing to take in the next few days?
         </label>
         <input
@@ -48,7 +48,7 @@ export default function DM6Closure_v60_6b() {
 
       {/* Confidence slider */}
       <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs font-manrope font-light text-gray-600">
+          <div className="flex items-center justify-between text-xs font-manrope font-light text-[#4d4d4d]">
             <span>How confident do you feel about this next step?</span>
             <span className="font-manrope font-extrabold text-gray-900">{confidence}%</span>
           </div>
@@ -60,7 +60,7 @@ export default function DM6Closure_v60_6b() {
           onChange={(e) => setConfidence(Number(e.target.value))}
           className="w-full"
         />
-        <p className="text-[11px] font-manrope font-light text-gray-500">
+        <p className="text-[11px] font-manrope font-light text-[#4d4d4d]">
           There&apos;s no right answer here — this just helps you notice your own
           signal. Low confidence doesn&apos;t mean &quot;don&apos;t do it&quot; — it might mean
           you want a smaller, safer version of the step.
@@ -69,17 +69,17 @@ export default function DM6Closure_v60_6b() {
 
       {/* Final snapshot */}
       <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-        <p className="text-[11px] font-manrope font-light uppercase tracking-wide text-gray-500 mb-1">
+        <p className="text-[11px] font-manrope font-light uppercase tracking-wide text-[#4d4d4d] mb-1">
           Closure Snapshot
         </p>
 
         {statement.trim() === "" && nextStep.trim() === "" ? (
-          <p className="text-xs font-manrope font-light text-gray-500">
+          <p className="text-xs font-manrope font-light text-[#4d4d4d]">
             Your closure summary will appear here once you write a takeaway or a
             small next step.
           </p>
         ) : (
-          <div className="space-y-1 text-xs font-manrope font-light text-gray-700">
+          <div className="space-y-1 text-xs font-manrope font-light text-[#4d4d4d]">
             {statement.trim() && (
               <p>
                 <span className="font-manrope font-extrabold text-gray-900">Takeaway:</span>{" "}
@@ -92,7 +92,7 @@ export default function DM6Closure_v60_6b() {
                 {nextStep}
               </p>
             )}
-            <p className="text-gray-700">
+            <p className="text-[#4d4d4d]">
               <span className="font-manrope font-extrabold text-gray-900">Confidence check:</span>{" "}
               {confidence}% sure this is a good next move for you right now.
             </p>

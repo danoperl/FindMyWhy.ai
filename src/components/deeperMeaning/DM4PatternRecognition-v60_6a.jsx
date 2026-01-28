@@ -33,9 +33,9 @@ export default function DM4PatternRecognition_v60_6a() {
         <span className="text-xs font-manrope font-light text-gray-500">v60.6a</span>
       </h3>
 
-      <p className="text-xs font-manrope font-light text-gray-600">
+      <p className="text-xs font-manrope font-light text-[#4d4d4d]">
         Based on your Why Chain so far, which themes or emotional patterns feel
-        like they’re showing up here?
+        like they're showing up here?
       </p>
 
       {/* Pattern chips */}
@@ -47,8 +47,8 @@ export default function DM4PatternRecognition_v60_6a() {
             onClick={() => toggleFacet(facet)}
             className={`px-3 py-1 rounded-full text-xs font-manrope font-extrabold border transition-colors ${
               selected.includes(facet)
-                ? "bg-indigo-600 text-white border-indigo-600"
-                : "bg-white text-gray-700 border-gray-300 hover:border-indigo-500"
+                ? "bg-[#442cd8] text-white border-[#442cd8]"
+                : "bg-white text-[#4d4d4d] border-gray-300 hover:border-[#442cd8]"
             }`}
           >
             {facet}
@@ -58,7 +58,7 @@ export default function DM4PatternRecognition_v60_6a() {
 
       {/* Notes box */}
       <div className="space-y-1">
-        <label className="text-xs font-manrope font-light text-gray-600">
+        <label className="text-xs font-manrope font-light text-[#4d4d4d]">
           What's the pattern you're noticing?
         </label>
         <textarea
@@ -72,17 +72,17 @@ export default function DM4PatternRecognition_v60_6a() {
 
       {/* Summary card */}
       <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-        <p className="text-[11px] font-manrope font-light uppercase tracking-wide text-gray-500 mb-1">
+        <p className="text-[11px] font-manrope font-light uppercase tracking-wide text-[#4d4d4d] mb-1">
           Snapshot
         </p>
 
         {selected.length === 0 && notes.trim().length === 0 ? (
-          <p className="text-xs font-manrope font-light text-gray-500">
+          <p className="text-xs font-manrope font-light text-[#4d4d4d]">
             Select a few patterns or write a brief summary to see the snapshot
             appear here.
           </p>
         ) : (
-          <div className="space-y-1 text-xs font-manrope font-light text-gray-700">
+          <div className="space-y-1 text-xs font-manrope font-light text-[#4d4d4d]">
             {selected.length > 0 && (
               <p>
                 <span className="font-manrope font-extrabold text-gray-900">
