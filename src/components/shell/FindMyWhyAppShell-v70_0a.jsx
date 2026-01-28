@@ -713,7 +713,7 @@ function detectAnchor(surfaceQuestion, domainsSelected = [], otherSpecify = '') 
   return 'relational';
 }
 const EXAMPLE_PROMPTS = [
-  "Example: Why do I keep saying yes to things I don't want to do?",
+  "Why do I keep saying yes to things I don't want to do?",
   "Why do I procrastinate on things that matter?",
   "I feel stuck but can't explain why"
 ];
