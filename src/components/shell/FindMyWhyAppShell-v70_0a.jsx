@@ -45,8 +45,8 @@ const getAllStepsOrdered = () => Object.values(steps).sort((a, b) => a.order - b
 
 const fmyTheme = {
   card: {
-    base: 'rounded-2xl border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.12)]',
-    padding: 'p-6 md:p-8',
+    base: 'rounded-xl border border-[#facebb] bg-white shadow-lg',
+    padding: 'p-6 sm:p-8',
   },
   typography: {
     heading: 'text-2xl font-semibold text-slate-900 font-manrope tracking-tight',
@@ -78,7 +78,7 @@ function PipelineStrip({ currentStep }) {
   const allSteps = getAllStepsOrdered();
   return (
     <div className="space-y-3">
-      <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">{currentStep === 1 ? 'Your journey ...' : 'Your journey'}</p>
+      <p className="text-lg text-[#4d4d4d] italic">Your journey …</p>
       <div className="flex items-center justify-between overflow-x-auto pb-1 -mx-1 px-1">
         {allSteps.map((step) => {
           const isComplete = step.order < currentStep;
@@ -88,23 +88,24 @@ function PipelineStrip({ currentStep }) {
               <div key={step.idNumber} className="flex items-center">
                 <div className={`flex flex-col items-center min-w-[48px] transition-opacity duration-200 ${isFuture ? 'opacity-40' : 'opacity-100'}`}>
                   <span className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
-                    step.order === 0 ? 'bg-[#5ba7c1] text-white' :
-                    isCurrent ? (currentStep === 1 ? 'bg-[#5ba7c1] text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm') : 
+                    isCurrent ? 'bg-[#5ba7c1] text-white shadow-sm' : 
                     isComplete ? 'bg-[#5ba7c1] text-white' : 
                     'bg-[#91d3f6] text-gray-800'
                   }`}>
                     {isComplete ? <CheckCircle size={14} /> : step.idNumber}
                   </span>
                   <span className={`text-[10px] mt-1.5 transition-colors duration-200 ${
-                    step.order === 0 ? (isComplete ? 'text-[#5ba7c1] font-normal' : 'text-[#5ba7c1] font-bold') :
-                    isCurrent ? (currentStep === 1 ? 'text-[#5ba7c1] font-bold' : 'text-blue-700 font-semibold') : 
-                    'text-slate-500'
+                    isCurrent ? (step.order === 0 || step.order === 1 || step.order === 2 ? 'text-[#5ba7c1] font-extrabold' : 'text-[#5ba7c1] font-semibold') : 
+                    isComplete ? (step.order === 2 ? 'text-[#5ba7c1] font-extrabold' : 'text-[#5ba7c1] font-semibold') :
+                    step.order === 2 ? 'text-[#91d3f6] font-extrabold' :
+                    step.order === 1 ? 'text-[#91d3f6] font-normal' :
+                    'text-[#91d3f6]'
                   }`}>
                     {step.label}
                   </span>
                 </div>
                 {step.order < allSteps.length - 1 && (
-                  <div className="w-4 h-0.5 mx-0.5 rounded-full bg-slate-200 transition-colors duration-200" />
+                  <div className={`w-4 h-0.5 mx-0.5 rounded-full transition-colors duration-200 ${isComplete ? 'bg-[#5ba7c1]' : 'bg-slate-200'}`} />
                 )}
               </div>
           );
@@ -1973,7 +1974,6 @@ export default function FindMyWhyApp() {
               </button>
             </div>
           </FmyCard>
-          <p className="text-[10px] font-manrope font-light text-[#4d4d4d] text-right">v70_0a</p>
         </div>
       </div>
     );
@@ -2060,7 +2060,7 @@ export default function FindMyWhyApp() {
                       type="text"
                       value={otherSpecify}
                       onChange={(e) => setOtherSpecify(e.target.value.slice(0, 100))}
-                      placeholder="e.g., health, money, creativity"
+                      placeholder="Example: Health, Money, Creativity"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#442cd8] bg-white text-gray-900 text-sm"
                       maxLength={100}
                     />
@@ -2075,7 +2075,6 @@ export default function FindMyWhyApp() {
               </div>
             </div>
           </FmyCard>
-          <p className="text-[10px] font-manrope font-light text-[#4d4d4d] text-right">v70_0a</p>
         </div>
       </div>
     );
@@ -2092,81 +2091,80 @@ export default function FindMyWhyApp() {
     const anchorCards = [
       {
         key: 'identity',
-        emoji: '🪞',
         label: 'Identity Anchors',
-        description: 'Who you see yourself as',
-        bgColor: 'bg-purple-50',
-        borderColor: 'border-purple-200',
-        textColor: 'text-purple-800',
-        descColor: 'text-purple-700',
-        highlightBorder: 'border-purple-500',
-        highlightBg: 'bg-purple-100',
+        description: 'Who do you see yourself as',
+        railColor: 'bg-[#5ba7c1]',
+        titleColor: 'text-[#5ba7c1]',
       },
       {
         key: 'value',
-        emoji: '⚖️',
         label: 'Value Anchors',
-        description: 'What matters most to you',
-        bgColor: 'bg-amber-50',
-        borderColor: 'border-amber-200',
-        textColor: 'text-amber-800',
-        descColor: 'text-amber-700',
-        highlightBorder: 'border-amber-500',
-        highlightBg: 'bg-amber-100',
+        description: 'What matters the most to you',
+        railColor: 'bg-[#91d3f6]',
+        titleColor: 'text-[#91d3f6]',
       },
       {
         key: 'relational',
-        emoji: '🤝',
         label: 'Relational Anchors',
         description: 'Key relationships and roles',
-        bgColor: 'bg-pink-50',
-        borderColor: 'border-pink-200',
-        textColor: 'text-pink-800',
-        descColor: 'text-pink-700',
-        highlightBorder: 'border-pink-500',
-        highlightBg: 'bg-pink-100',
+        railColor: 'bg-[#ffde3d]',
+        titleColor: 'text-[#ffde3d]',
       },
     ];
     
     screenBody = (
       <div className="min-h-screen bg-[#fff2e6] p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-        <div ref={contentRef} className="max-w-2xl mx-auto">
+        <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
+          <div className="text-center mb-4 relative">
+            <BackToHomePill
+              onClick={() => setScreen("HOME")}
+              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
+            />
+            <div className="flex items-center justify-center gap-3 pr-[42px]">
+              <img src="/icons/magnifying.svg" alt="" className="h-[86px] w-[86px]" />
+              <h1 className="fmy-brand-logotype text-4xl font-bold text-gray-900 tracking-tight">FindMyWhy?</h1>
+            </div>
+          </div>
+          
           <FmyCard>
             <PipelineStrip currentStep={currentStep} />
             <FmyCardDivider />
             
             <div className="space-y-6">
               <div>
-                <h2 className="fmy-h2 text-3xl mb-2">What's this really about?</h2>
-                <p className="text-base font-manrope font-light text-slate-600">Looking for identity, values, and relational anchors.</p>
+                <h2 className="fmy-h2 text-4xl mb-2">What this is really about</h2>
+                <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">Looking for identity, values, and relational anchors.</p>
               </div>
               
               <div className="grid gap-3">
                 {anchorCards.map((card) => {
-                  const isWinning = card.key === winningAnchor;
                   return (
                     <div
                       key={card.key}
-                      className={`${card.bgColor} ${isWinning ? 'border-4' : 'border-2'} ${isWinning ? card.highlightBorder : card.borderColor} rounded-lg p-4 ${isWinning ? card.highlightBg : ''} transition-all`}
+                      className="bg-[#fff2e6] border border-slate-200 rounded-r-xl flex"
                     >
-                      <p className={`text-sm font-semibold ${card.textColor}`}>{card.emoji} {card.label}</p>
-                      <p className={`text-xs ${card.descColor} mt-1`}>{card.description}</p>
+                      <div className={`${card.railColor} w-2`} />
+                      <div className="px-6 py-5 flex-1">
+                        <p className={`text-base font-manrope font-semibold leading-tight ${card.titleColor}`}>{card.label}</p>
+                        <p className="text-sm font-manrope font-normal leading-tight text-[#4d4d4d] mt-0.5">{card.description}</p>
+                      </div>
                     </div>
                   );
                 })}
               </div>
               
-              <div className="flex justify-center gap-3 pt-2">
-                <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-manrope font-extrabold rounded-lg border border-slate-300 flex items-center gap-2">
-                  <ArrowLeft size={16} /> Back
+              <div className="flex items-center justify-center gap-4 pt-2">
+                <button onClick={handleBack} className="min-w-[220px] px-6 py-3 bg-white hover:bg-slate-200 text-[#4d4d4d] font-manrope font-extrabold rounded-lg border border-[#facebb] inline-flex items-center justify-center gap-2 text-center">
+                  <ArrowLeft size={16} /> Go Back
                 </button>
-                <button onClick={handleDM2Continue} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-manrope font-extrabold rounded-lg flex items-center gap-2">
+                <button onClick={handleDM2Continue} className="min-w-[220px] px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-manrope font-extrabold rounded-lg inline-flex items-center justify-center gap-2 text-center">
                   Continue <ArrowRight size={18} />
                 </button>
               </div>
             </div>
           </FmyCard>
+          <p className="text-[10px] font-manrope font-light text-gray-600 text-right mt-2">v70_0a</p>
         </div>
       </div>
     );
