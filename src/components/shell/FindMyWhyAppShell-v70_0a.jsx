@@ -78,7 +78,7 @@ function PipelineStrip({ currentStep }) {
   const allSteps = getAllStepsOrdered();
   return (
     <div className="space-y-3">
-      <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">Your journey</p>
+      <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">{currentStep === 1 ? 'Your journey ...' : 'Your journey'}</p>
       <div className="flex items-center justify-between overflow-x-auto pb-1 -mx-1 px-1">
         {allSteps.map((step) => {
           const isComplete = step.order < currentStep;
@@ -89,15 +89,15 @@ function PipelineStrip({ currentStep }) {
                 <div className={`flex flex-col items-center min-w-[48px] transition-opacity duration-200 ${isFuture ? 'opacity-40' : 'opacity-100'}`}>
                   <span className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
                     step.order === 0 ? 'bg-[#5ba7c1] text-white' :
-                    isCurrent ? 'bg-blue-600 text-white shadow-sm' : 
+                    isCurrent ? (currentStep === 1 ? 'bg-[#5ba7c1] text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm') : 
                     isComplete ? 'bg-[#5ba7c1] text-white' : 
                     'bg-[#91d3f6] text-gray-800'
                   }`}>
                     {isComplete ? <CheckCircle size={14} /> : step.idNumber}
                   </span>
                   <span className={`text-[10px] mt-1.5 transition-colors duration-200 ${
-                    step.order === 0 ? 'text-[#5ba7c1] font-bold' :
-                    isCurrent ? 'text-blue-700 font-semibold' : 
+                    step.order === 0 ? (isComplete ? 'text-[#5ba7c1] font-normal' : 'text-[#5ba7c1] font-bold') :
+                    isCurrent ? (currentStep === 1 ? 'text-[#5ba7c1] font-bold' : 'text-blue-700 font-semibold') : 
                     'text-slate-500'
                   }`}>
                     {step.label}
@@ -1916,7 +1916,7 @@ export default function FindMyWhyApp() {
             </div>
           </div>
           
-          <FmyCard>
+          <FmyCard className="!border-[#facebb]">
             <div className="mb-6">
               <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-2 text-[#5ba7c1] hover:text-[#5ba7c1]/80 text-base font-manrope font-semibold">
                 <HelpCircle size={18} className="text-[#5ba7c1]" />What is Deeper Meaning Mode?
@@ -1945,7 +1945,7 @@ export default function FindMyWhyApp() {
                   value={surfaceQuestion}
                   onChange={(e) => setSurfaceQuestion(e.target.value.slice(0, 500))}
                   placeholder='Example: "Why do I always feel like I am falling behind?"'
-                  className="w-full px-4 py-3 border border-[#facebb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#442cd8] bg-yellow-200/25 text-gray-900 placeholder:text-[#4d4d4d] text-sm min-h-[100px] resize-y"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#442cd8] bg-yellow-200/25 text-gray-900 placeholder:text-[#4d4d4d] text-sm min-h-[100px] resize-y"
                   maxLength={500}
                 />
                 <span className="absolute bottom-3 right-3 text-xs text-gray-400">{surfaceQuestion.length}/500</span>
@@ -1986,24 +1986,35 @@ export default function FindMyWhyApp() {
     screenBody = (
       <div className="min-h-screen bg-[#fff2e6] p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-        <div ref={contentRef} className="max-w-2xl mx-auto">
-          <FmyCard>
+        <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
+          <div className="text-center mb-4 relative">
+            <BackToHomePill
+              onClick={() => setScreen("HOME")}
+              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
+            />
+            <div className="flex items-center justify-center gap-3 pr-[42px]">
+              <img src="/icons/magnifying.svg" alt="" className="h-[86px] w-[86px]" />
+              <h1 className="fmy-brand-logotype text-4xl font-bold text-gray-900 tracking-tight">FindMyWhy?</h1>
+            </div>
+          </div>
+          
+          <FmyCard className="!border-[#facebb]">
             <PipelineStrip currentStep={currentStep} />
             <FmyCardDivider />
             
             <div className="space-y-6">
               <div>
-                <h2 className="fmy-h2 text-3xl mb-2">What areas of your life does this touch?</h2>
-                <p className="text-base font-manrope font-light text-[#4d4d4d]">We'll clarify what this question is really about.</p>
+                <h2 className="fmy-h2 text-4xl mb-2">What areas of your life does this touch?</h2>
+                <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">We'll clarify what this question is really about.</p>
               </div>
               
-              <div className="bg-[#facebb]/20 border-l-4 border-[#facebb] p-4 rounded-r-lg">
-                <p className={`${fmyTheme.typography.label} text-[#442cd8] mb-1`}>Your Question</p>
+              <div className="bg-[#fefbe4] border border-slate-200 p-4 rounded-lg">
+                <p className="text-xs font-semibold tracking-wide text-[#4d4d4d] mb-1">Your Question:</p>
                 <p className="text-gray-900 italic">"{surfaceQuestion}"</p>
               </div>
               
               <div className="space-y-2">
-                <p className="text-sm font-manrope font-extrabold text-[#4d4d4d]">What domain does this live in?</p>
+                <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">What domain does this live in? <span className="text-xs font-manrope font-light text-[#4d4d4d]">(choose up to 3)</span></p>
                 <div className="flex flex-wrap gap-2">
                   {DOMAINS.map((domain) => {
                     const isSelected = domainsSelected.includes(domain);
@@ -2029,14 +2040,13 @@ export default function FindMyWhyApp() {
                             }
                           }
                         }} 
-                        className={`px-3 py-1.5 rounded-full text-xs font-manrope font-extrabold transition-all ${isSelected ? 'bg-[#442cd8] text-white shadow-sm' : 'bg-gray-100 text-[#4d4d4d] hover:bg-gray-200'}`}
+                        className={`px-3 py-1.5 text-xs rounded-lg border border-[#facebb] transition-all ${isSelected ? 'bg-[#facebb]/70 text-[#4d4d4d]' : 'bg-[#facebb]/50 text-[#4d4d4d] hover:bg-[#facebb]/70'}`}
                       >
                         {domain}
                       </button>
                     );
                   })}
                 </div>
-                <p className="text-xs font-manrope font-light text-[#4d4d4d] mt-1">Choose up to 3</p>
                 
                 {domainSelectionError && (
                   <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-lg mt-2">
@@ -2065,6 +2075,7 @@ export default function FindMyWhyApp() {
               </div>
             </div>
           </FmyCard>
+          <p className="text-[10px] font-manrope font-light text-[#4d4d4d] text-right">v70_0a</p>
         </div>
       </div>
     );
