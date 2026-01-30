@@ -57,6 +57,47 @@ const fmyTheme = {
 };
 
 // =============================================================================
+// JOURNEY STEPPER CONSTANTS
+// =============================================================================
+
+// JOURNEY STEPPER CONTRACT (Do not change without design signoff)
+// Invariants:
+// - Label text: "Your journey …" (space before ellipsis, Unicode ellipsis)
+// - Label class: text-lg text-[#4d4d4d] italic
+// - Colors: current/complete teal (#5ba7c1), future sky (#91d3f6)
+// - Active step label uses Manrope ExtraBold only
+
+const JOURNEY_LABEL_CLASS = 'text-lg text-[#4d4d4d] italic';
+const JOURNEY_DOT_CLASS_CURRENT = 'bg-[#5ba7c1] text-white shadow-sm';
+const JOURNEY_DOT_CLASS_COMPLETE = 'bg-[#5ba7c1]/40 text-white';
+const JOURNEY_DOT_CLASS_FUTURE = 'bg-[#91d3f6] text-gray-800';
+const JOURNEY_LABEL_CLASS_ACTIVE = 'font-extrabold';
+const JOURNEY_LABEL_CLASS_COMPLETE = 'font-semibold';
+const JOURNEY_LABEL_CLASS_FUTURE = 'font-normal';
+const JOURNEY_LABEL_COLOR_CURRENT = 'text-[#5ba7c1]';
+const JOURNEY_LABEL_COLOR_FUTURE = 'text-[#91d3f6]';
+const JOURNEY_CONNECTOR_COLOR_COMPLETE = 'bg-[#5ba7c1]/40';
+const JOURNEY_CONNECTOR_COLOR_FUTURE = 'bg-slate-200';
+
+// =============================================================================
+// DM3 REPORT BOXES CONSTANTS
+// =============================================================================
+
+// DM3 REPORT BOXES CONTRACT (informational; no hover states)
+// Invariants:
+// - Fill: bg-[#fff2e6]
+// - Border: border border-slate-200 (1px only; no ring/border-2)
+// - Left rail exists, left corners square (no rounding on left)
+// - Explicit rail-to-content padding
+// - Text is 1 step smaller than initial mock; leading reduced (tight/snug)
+
+const REPORT_BOX_BASE = 'bg-[#fff2e6] border border-slate-200 rounded-r-xl flex';
+const REPORT_RAIL_BASE = 'w-2';
+const REPORT_CONTENT_PADDING = 'px-6 py-5 flex-1';
+const REPORT_TITLE_BASE = 'text-base font-manrope font-semibold leading-tight';
+const REPORT_SUBTITLE_BASE = 'text-sm font-manrope font-normal leading-tight text-[#4d4d4d] mt-0.5';
+
+// =============================================================================
 // SHARED COMPONENTS
 // =============================================================================
 
@@ -74,38 +115,87 @@ function FmyCardDivider() {
   return <div className="border-b border-slate-200 my-6" />;
 }
 
+// JOURNEY STEPPER CONTRACT (Do not change without design signoff)
+// Invariants:
+// - Label text: "Your journey …" (space before ellipsis, Unicode ellipsis)
+// - Label class: text-lg text-[#4d4d4d] italic
+// - Colors: current/complete teal (#5ba7c1), future sky (#91d3f6)
+// - Active step label uses Manrope ExtraBold only
 function PipelineStrip({ currentStep }) {
   const allSteps = getAllStepsOrdered();
+  const isWhyScreen = currentStep === 3;
+  const isEntryScreen = currentStep === 0;
+  const isSurfaceScreen = currentStep === 1;
   return (
-    <div className="space-y-3">
-      <p className="text-lg text-[#4d4d4d] italic">Your journey …</p>
+    <div>
       <div className="flex items-center justify-between overflow-x-auto pb-1 -mx-1 px-1">
         {allSteps.map((step) => {
           const isComplete = step.order < currentStep;
           const isCurrent = step.order === currentStep;
           const isFuture = step.order > currentStep;
+          
+          // Determine font weight with special cases for Entry label
+          let fontWeightClass = '';
+          
+          // Special handling for Entry (order 0) label based on current screen
+          if (step.order === 0) {
+            if (isEntryScreen) {
+              // Entry screen: Entry label → ExtraBold
+              fontWeightClass = JOURNEY_LABEL_CLASS_ACTIVE;
+            } else if (isSurfaceScreen || isWhyScreen) {
+              // Surface or WHY screen: Entry label → Light
+              fontWeightClass = 'font-light';
+            } else {
+              // Other screens: use default logic
+              fontWeightClass = isCurrent ? JOURNEY_LABEL_CLASS_ACTIVE : 
+                isComplete ? JOURNEY_LABEL_CLASS_COMPLETE :
+                JOURNEY_LABEL_CLASS_FUTURE;
+            }
+          } else if (isWhyScreen) {
+            // WHY screen special cases for other labels
+            if (step.order === 1 || step.order === 2) {
+              // Surface (1) and Anchor (2) → Light
+              fontWeightClass = 'font-light';
+            } else if (step.order === 3) {
+              // WHY (3) → ExtraBold
+              fontWeightClass = JOURNEY_LABEL_CLASS_ACTIVE;
+            } else {
+              // Other steps use default logic
+              fontWeightClass = isCurrent ? (step.order === 0 || step.order === 1 || step.order === 2 ? JOURNEY_LABEL_CLASS_ACTIVE : JOURNEY_LABEL_CLASS_COMPLETE) : 
+                isComplete ? (step.order === 2 ? JOURNEY_LABEL_CLASS_ACTIVE : JOURNEY_LABEL_CLASS_COMPLETE) :
+                step.order === 2 ? JOURNEY_LABEL_CLASS_ACTIVE :
+                step.order === 1 ? JOURNEY_LABEL_CLASS_FUTURE :
+                JOURNEY_LABEL_CLASS_FUTURE;
+            }
+          } else {
+            // Default logic for non-WHY screens (Entry already handled above)
+            fontWeightClass = isCurrent ? (step.order === 0 || step.order === 1 || step.order === 2 ? JOURNEY_LABEL_CLASS_ACTIVE : JOURNEY_LABEL_CLASS_COMPLETE) : 
+              isComplete ? (step.order === 2 ? JOURNEY_LABEL_CLASS_ACTIVE : JOURNEY_LABEL_CLASS_COMPLETE) :
+              step.order === 2 ? JOURNEY_LABEL_CLASS_ACTIVE :
+              step.order === 1 ? JOURNEY_LABEL_CLASS_FUTURE :
+              JOURNEY_LABEL_CLASS_FUTURE;
+          }
+          
           return (
               <div key={step.idNumber} className="flex items-center">
                 <div className={`flex flex-col items-center min-w-[48px] transition-opacity duration-200 ${isFuture ? 'opacity-40' : 'opacity-100'}`}>
                   <span className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-colors duration-200 ${
-                    isCurrent ? 'bg-[#5ba7c1] text-white shadow-sm' : 
-                    isComplete ? 'bg-[#5ba7c1] text-white' : 
-                    'bg-[#91d3f6] text-gray-800'
+                    isCurrent ? JOURNEY_DOT_CLASS_CURRENT : 
+                    isComplete ? JOURNEY_DOT_CLASS_COMPLETE : 
+                    JOURNEY_DOT_CLASS_FUTURE
                   }`}>
                     {isComplete ? <CheckCircle size={14} /> : step.idNumber}
                   </span>
                   <span className={`text-[10px] mt-1.5 transition-colors duration-200 ${
-                    isCurrent ? (step.order === 0 || step.order === 1 || step.order === 2 ? 'text-[#5ba7c1] font-extrabold' : 'text-[#5ba7c1] font-semibold') : 
-                    isComplete ? (step.order === 2 ? 'text-[#5ba7c1] font-extrabold' : 'text-[#5ba7c1] font-semibold') :
-                    step.order === 2 ? 'text-[#91d3f6] font-extrabold' :
-                    step.order === 1 ? 'text-[#91d3f6] font-normal' :
-                    'text-[#91d3f6]'
-                  }`}>
+                    isCurrent ? JOURNEY_LABEL_COLOR_CURRENT : 
+                    isComplete ? JOURNEY_LABEL_COLOR_CURRENT :
+                    JOURNEY_LABEL_COLOR_FUTURE
+                  } ${fontWeightClass}`}>
                     {step.label}
                   </span>
                 </div>
                 {step.order < allSteps.length - 1 && (
-                  <div className={`w-4 h-0.5 mx-0.5 rounded-full transition-colors duration-200 ${isComplete ? 'bg-[#5ba7c1]' : 'bg-slate-200'}`} />
+                  <div className={`w-4 h-0.5 mx-0.5 rounded-full transition-colors duration-200 ${isComplete ? JOURNEY_CONNECTOR_COLOR_COMPLETE : JOURNEY_CONNECTOR_COLOR_FUTURE}`} />
                 )}
               </div>
           );
@@ -1581,7 +1671,7 @@ export default function FindMyWhyApp() {
                 <BookOpen size={14} />
                 View Log{logCount > 0 ? ` (${logCount})` : ''}
               </button>
-              <BackToHomePill onClick={() => setScreen("HOME")} />
+              <BackToHomePill onClick={() => setScreen("HOME")} className="!border-2" />
             </div>
             <FmyCard>
               <div className="mb-6">
@@ -1631,7 +1721,7 @@ export default function FindMyWhyApp() {
             .qc-placeholder-input::placeholder { font-style: italic; }
           `}</style>
           <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative pt-12">
-            <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50" />
+            <BackToHomePill onClick={() => setScreen("HOME")} className="absolute top-4 right-4 z-50 !border-2" />
             <FmyCard>
               <div className="mb-6">
                 <div className="flex items-center gap-3 text-sm text-slate-600">
@@ -1684,7 +1774,7 @@ export default function FindMyWhyApp() {
                 <BookOpen size={14} />
                 View Log{logCount > 0 ? ` (${logCount})` : ''}
               </button>
-              <BackToHomePill onClick={() => setScreen("HOME")} />
+              <BackToHomePill onClick={() => setScreen("HOME")} className="!border-2" />
             </div>
             <FmyCard className="space-y-6">
               <h2 className={fmyTheme.typography.heading}>💡 Here's what we learned</h2>
@@ -1909,7 +1999,7 @@ export default function FindMyWhyApp() {
           <div className="text-center mb-4 relative">
             <BackToHomePill
               onClick={() => setScreen("HOME")}
-              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
+              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-2 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
             />
             <div className="flex items-center justify-center gap-3 pr-[42px]">
               <img src="/icons/magnifying.svg" alt="" className="h-[86px] w-[86px]" />
@@ -1934,8 +2024,9 @@ export default function FindMyWhyApp() {
               )}
             </div>
             <FmyCardDivider />
+            <PipelineStrip currentStep={currentStep} />
             
-            <div className="space-y-5">
+            <div className="space-y-5 mt-5">
               <div>
                 <h2 className="fmy-h2 text-5xl leading-tight">What's really on your mind?</h2>
                 <p className="text-lg font-manrope font-light italic text-[#4d4d4d] mt-1">Share something you'd like to explore...</p>
@@ -1946,7 +2037,7 @@ export default function FindMyWhyApp() {
                   value={surfaceQuestion}
                   onChange={(e) => setSurfaceQuestion(e.target.value.slice(0, 500))}
                   placeholder='Example: "Why do I always feel like I am falling behind?"'
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#442cd8] bg-yellow-200/25 text-gray-900 placeholder:text-[#4d4d4d] text-sm min-h-[100px] resize-y"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#442cd8] bg-yellow-200/25 font-manrope font-bold italic text-[#5ba7c1] placeholder:text-[#4d4d4d] text-base min-h-[100px] resize-y"
                   maxLength={500}
                 />
                 <span className="absolute bottom-3 right-3 text-xs text-gray-400">{surfaceQuestion.length}/500</span>
@@ -1964,8 +2055,6 @@ export default function FindMyWhyApp() {
               </div>
             </div>
             
-            <FmyCardDivider />
-            <PipelineStrip currentStep={currentStep} />
             <FmyCardDivider />
             
             <div className="flex justify-center">
@@ -1990,7 +2079,7 @@ export default function FindMyWhyApp() {
           <div className="text-center mb-4 relative">
             <BackToHomePill
               onClick={() => setScreen("HOME")}
-              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
+              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-2 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
             />
             <div className="flex items-center justify-center gap-3 pr-[42px]">
               <img src="/icons/magnifying.svg" alt="" className="h-[86px] w-[86px]" />
@@ -2000,17 +2089,16 @@ export default function FindMyWhyApp() {
           
           <FmyCard className="!border-[#facebb]">
             <PipelineStrip currentStep={currentStep} />
-            <FmyCardDivider />
             
-            <div className="space-y-6">
+            <div className="space-y-6 mt-5">
               <div>
                 <h2 className="fmy-h2 text-4xl mb-2">What areas of your life does this touch?</h2>
-                <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">We'll clarify what this question is really about.</p>
+                <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">We'll clarify what this question is really about...</p>
               </div>
               
               <div className="bg-[#fefbe4] border border-slate-200 p-4 rounded-lg">
-                <p className="text-xs font-semibold tracking-wide text-[#4d4d4d] mb-1">Your Question:</p>
-                <p className="text-gray-900 italic">"{surfaceQuestion}"</p>
+                <p className="text-xs font-semibold tracking-wide text-[#4d4d4d] mb-1">My Question</p>
+                <p className="text-base font-manrope font-bold text-[#5ba7c1] italic">"{surfaceQuestion}"</p>
               </div>
               
               <div className="space-y-2">
@@ -2087,6 +2175,14 @@ export default function FindMyWhyApp() {
     // Detect winning anchor using rules-based scoring + domain boosts
     const winningAnchor = detectAnchor(surfaceQuestion, domainsSelected, otherSpecify);
     
+    // DM3 REPORT BOXES CONTRACT (informational; no hover states)
+    // Invariants:
+    // - Fill: bg-[#fff2e6]
+    // - Border: border border-slate-200 (1px only; no ring/border-2)
+    // - Left rail exists, left corners square (no rounding on left)
+    // - Explicit rail-to-content padding
+    // - Text is 1 step smaller than initial mock; leading reduced (tight/snug)
+    
     // Anchor card configuration
     const anchorCards = [
       {
@@ -2119,7 +2215,7 @@ export default function FindMyWhyApp() {
           <div className="text-center mb-4 relative">
             <BackToHomePill
               onClick={() => setScreen("HOME")}
-              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
+              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-2 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
             />
             <div className="flex items-center justify-center gap-3 pr-[42px]">
               <img src="/icons/magnifying.svg" alt="" className="h-[86px] w-[86px]" />
@@ -2129,9 +2225,8 @@ export default function FindMyWhyApp() {
           
           <FmyCard>
             <PipelineStrip currentStep={currentStep} />
-            <FmyCardDivider />
             
-            <div className="space-y-6">
+            <div className="space-y-6 mt-5">
               <div>
                 <h2 className="fmy-h2 text-4xl mb-2">What this is really about</h2>
                 <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">Looking for identity, values, and relational anchors.</p>
@@ -2142,12 +2237,12 @@ export default function FindMyWhyApp() {
                   return (
                     <div
                       key={card.key}
-                      className="bg-[#fff2e6] border border-slate-200 rounded-r-xl flex"
+                      className={REPORT_BOX_BASE}
                     >
-                      <div className={`${card.railColor} w-2`} />
-                      <div className="px-6 py-5 flex-1">
-                        <p className={`text-base font-manrope font-semibold leading-tight ${card.titleColor}`}>{card.label}</p>
-                        <p className="text-sm font-manrope font-normal leading-tight text-[#4d4d4d] mt-0.5">{card.description}</p>
+                      <div className={`${card.railColor} ${REPORT_RAIL_BASE}`} />
+                      <div className={REPORT_CONTENT_PADDING}>
+                        <p className={`${REPORT_TITLE_BASE} ${card.titleColor}`}>{card.label}</p>
+                        <p className={REPORT_SUBTITLE_BASE}>{card.description}</p>
                       </div>
                     </div>
                   );
@@ -2177,15 +2272,25 @@ export default function FindMyWhyApp() {
     screenBody = (
       <div className="min-h-screen bg-[#fff2e6] p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-        <div ref={contentRef} className="max-w-2xl mx-auto">
+        <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
+          <div className="text-center mb-4 relative">
+            <BackToHomePill
+              onClick={() => setScreen("HOME")}
+              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-2 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
+            />
+            <div className="flex items-center justify-center gap-3 pr-[42px]">
+              <img src="/icons/magnifying.svg" alt="" className="h-[86px] w-[86px]" />
+              <h1 className="fmy-brand-logotype text-4xl font-bold text-gray-900 tracking-tight">FindMyWhy?</h1>
+            </div>
+          </div>
+          
           <FmyCard>
             <PipelineStrip currentStep={currentStep} />
-            <FmyCardDivider />
             
-            <div className="space-y-6">
+            <div className="space-y-6 mt-5">
               <div>
-                <h2 className="fmy-h2 text-3xl mb-2">Why does this matter?</h2>
-                <p className="text-base font-manrope font-light text-slate-600">Explore layers of "why" at your pace.</p>
+                <h2 className="fmy-h2 text-4xl mb-2">Why does this matter?</h2>
+                <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">Explore layers of "why" at your own pace</p>
               </div>
               
               {entryContext === 'refine' && (
@@ -2201,26 +2306,38 @@ export default function FindMyWhyApp() {
               )}
               
               <div className="flex items-center gap-3">
-                <span className="text-xs font-manrope font-light text-slate-500 uppercase tracking-wide">Progress</span>
+                <span className="text-xs font-manrope font-bold text-slate-500 uppercase tracking-wide">MY PROGRESS</span>
                 <div className="flex gap-1.5">
                   {[0,1,2,3,4].map((i) => (
-                    <div key={i} className={`w-8 h-2 rounded-full ${i < whyChain.length ? 'bg-green-500' : i === whyChain.length ? 'bg-indigo-500' : 'bg-slate-200'}`} />
+                    <div key={i} className={`w-8 h-2 rounded-full ${i < whyChain.length ? 'bg-[#5ba7c1]' : i === whyChain.length ? 'bg-[#91d3f6]' : 'bg-slate-200'}`} />
                   ))}
                 </div>
-                <span className="text-xs font-manrope font-light text-slate-500">{Math.min(whyChain.length + 1, MAX_DEPTH)} of {MAX_DEPTH}</span>
               </div>
               
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                <p className="text-xs font-manrope font-light text-slate-500 uppercase tracking-wide mb-1">Original question</p>
-                <p className="text-sm font-manrope font-light text-slate-800 italic">"{surfaceQuestion}"</p>
+              <div className="bg-yellow-200/25 border border-slate-200 rounded-lg p-4">
+                <p className="text-xs font-manrope font-bold text-slate-500 mb-1">My Question</p>
+                <p className="text-base font-manrope font-bold text-[#5ba7c1] italic">"{surfaceQuestion}"</p>
               </div>
+              
+              {whyChain.length < MAX_DEPTH && (
+                <div className="space-y-3">
+                  <label className="text-lg font-manrope font-light italic text-[#4d4d4d] block">I believe this is my reason why...</label>
+                  <textarea
+                    value={whyInput}
+                    onChange={(e) => setWhyInput(e.target.value.slice(0, 300))}
+                    placeholder="Write whatever feels honest"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-900 min-h-[80px] resize-y"
+                    maxLength={300}
+                  />
+                </div>
+              )}
               
               {whyChain.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-manrope font-light text-slate-500 uppercase tracking-wide">Your WHY steps</p>
+                  <p className="text-xs font-manrope font-bold text-slate-500 uppercase tracking-wide">MY WHY STEPS</p>
                   {whyChain.map((why, i) => (
-                    <div key={why.id} className="flex gap-3 items-start animate-fadeIn">
-                      <span className="w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
+                    <div key={why.id} className="flex gap-3 items-center animate-fadeIn">
+                      <span className="w-8 h-8 rounded-full bg-[#facebb]/50 border-2 border-[#facebb] text-[#4d4d4d] text-xs flex items-center justify-center flex-shrink-0">{i + 1}</span>
                       {editingIndex === i ? (
                         <div className="flex-1 space-y-2">
                           <textarea
@@ -2239,7 +2356,7 @@ export default function FindMyWhyApp() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex-1 flex items-start justify-between gap-3">
+                        <div className="flex-1 flex items-center justify-between gap-3">
                           <p className="text-sm font-manrope font-light text-slate-700">{why.whyText}</p>
                           <button onClick={() => startEditWhy(i)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-manrope font-extrabold rounded flex-shrink-0">
                             Edit
@@ -2248,19 +2365,6 @@ export default function FindMyWhyApp() {
                       )}
                     </div>
                   ))}
-                </div>
-              )}
-              
-              {whyChain.length < MAX_DEPTH && (
-                <div className="space-y-3">
-                  <label className="text-sm font-manrope font-extrabold text-slate-700 block">I believe this is my reason why:</label>
-                  <textarea
-                    value={whyInput}
-                    onChange={(e) => setWhyInput(e.target.value.slice(0, 300))}
-                    placeholder="Write whatever feels honest..."
-                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-900 min-h-[80px] resize-y"
-                    maxLength={300}
-                  />
                 </div>
               )}
               
@@ -2277,15 +2381,16 @@ export default function FindMyWhyApp() {
                     className={`px-5 py-2.5 font-manrope font-extrabold rounded-lg ${
                       editingIndex !== null 
                         ? 'bg-slate-300 text-slate-500 cursor-not-allowed' 
-                        : 'bg-slate-600 hover:bg-slate-700 text-white'
+                        : 'bg-[#442cd8] hover:bg-[#442cd8]/90 text-white'
                     }`}
                   >
-                    I'm done
+                    I'm Done
                   </button>
                 )}
               </div>
             </div>
           </FmyCard>
+          <p className="text-[10px] font-manrope font-light text-gray-600 text-right mt-2">v70_0a</p>
         </div>
       </div>
     );
@@ -2298,20 +2403,25 @@ export default function FindMyWhyApp() {
     screenBody = (
       <div className="min-h-screen bg-[#fff2e6] p-4 sm:p-6">
         <style>{`.animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-        <div ref={contentRef} className="max-w-2xl mx-auto">
+        <div ref={contentRef} className="max-w-2xl mx-auto space-y-6 relative">
+          <div className="text-center mb-4 relative">
+            <BackToHomePill
+              onClick={() => setScreen("HOME")}
+              className="absolute top-1/2 right-0 -translate-y-1/2 z-50 !border-2 !border-[#facebb] !text-[#4d4d4d] !rounded-lg"
+            />
+            <div className="flex items-center justify-center gap-3 pr-[42px]">
+              <img src="/icons/magnifying.svg" alt="" className="h-[86px] w-[86px]" />
+              <h1 className="fmy-brand-logotype text-4xl font-bold text-gray-900 tracking-tight">FindMyWhy?</h1>
+            </div>
+          </div>
+          
           <FmyCard>
             <PipelineStrip currentStep={currentStep} />
-            <FmyCardDivider />
             
-            <div className="space-y-6">
+            <div className="space-y-6 mt-5">
               <div>
-                <h2 className="fmy-h2 text-3xl mb-2">What patterns keep showing up with you?</h2>
-                {domainsSelected.length > 0 && (
-                  <p className="text-xs font-manrope font-light text-slate-500 mt-1 mb-2">
-                    Domains: {domainsSelected.map(formatDomainLabel).join(' · ')}
-                  </p>
-                )}
-                <p className="text-base font-manrope font-light text-slate-600">Themes surfaced from your WHY-Chain.</p>
+                <h2 className="fmy-h2 text-4xl mb-2">Why does this matter?</h2>
+                <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">Explore layers of "why" at your pace.</p>
               </div>
               
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
@@ -2383,6 +2493,7 @@ export default function FindMyWhyApp() {
               </div>
             </div>
           </FmyCard>
+          <p className="text-[10px] font-manrope font-light text-gray-600 text-right mt-2">v70_0a</p>
         </div>
       </div>
     );
@@ -2398,9 +2509,8 @@ export default function FindMyWhyApp() {
         <div ref={contentRef} className="max-w-2xl mx-auto">
           <FmyCard>
             <PipelineStrip currentStep={currentStep} />
-            <FmyCardDivider />
             
-            <div className="space-y-6">
+            <div className="space-y-6 mt-5">
               <div>
                 <h2 className="fmy-h2 text-3xl mb-2">What this all adds up to…</h2>
                 <p className="text-base font-manrope font-light text-[#4d4d4d]">A neutral look at the themes.</p>
@@ -2487,13 +2597,12 @@ export default function FindMyWhyApp() {
               <BookOpen size={14} />
               View Log{logCount > 0 ? ` (${logCount})` : ''}
             </button>
-            <BackToHomePill onClick={() => setScreen("HOME")} />
+            <BackToHomePill onClick={() => setScreen("HOME")} className="!border-2" />
           </div>
           <FmyCard>
             <PipelineStrip currentStep={currentStep} />
-            <FmyCardDivider />
             
-            <div className="space-y-6">
+            <div className="space-y-6 mt-5">
               <div>
                 <h2 className="fmy-h2 text-3xl mb-2">Your clarity snapshot</h2>
                 <p className="text-base font-manrope font-light text-[#4d4d4d]">Here's what has emerged, with a brief reflection on where you've landed.</p>

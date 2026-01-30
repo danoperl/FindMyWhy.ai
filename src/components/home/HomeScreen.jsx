@@ -65,9 +65,9 @@ export default function HomeScreen({ onEnterIC, onEnterDM, onQuickClarity, onDee
               FMY? helps you work through one specific question by asking a series of short, easily answered prompts, then responds with a decision.
             </p>
             <ul className="text-[18px] leading-7 text-neutral-700 space-y-1">
-              <li>• Not therapy or coaching</li>
-              <li>• Not journaling</li>
-              <li>• Not preachy or judgmental</li>
+              <li>• Focused answers without journaling</li>
+              <li>• Clear thinking without therapy speak</li>
+              <li>• Direct, honest, and judgment-free</li>
             </ul>
           </div>
 
