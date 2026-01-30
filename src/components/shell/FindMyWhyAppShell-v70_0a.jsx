@@ -126,6 +126,7 @@ function PipelineStrip({ currentStep }) {
   const isWhyScreen = currentStep === 3;
   const isEntryScreen = currentStep === 0;
   const isSurfaceScreen = currentStep === 1;
+  const isPatternScreen = currentStep === 4;
   return (
     <div>
       <div className="flex items-center justify-between overflow-x-auto pb-1 -mx-1 px-1">
@@ -137,8 +138,15 @@ function PipelineStrip({ currentStep }) {
           // Determine font weight with special cases for Entry label
           let fontWeightClass = '';
           
-          // Special handling for Entry (order 0) label based on current screen
-          if (step.order === 0) {
+          // Pattern screen: Pattern label (order 4) → ExtraBold, all others → Light
+          if (isPatternScreen) {
+            if (step.order === 4) {
+              fontWeightClass = JOURNEY_LABEL_CLASS_ACTIVE;
+            } else {
+              fontWeightClass = 'font-light';
+            }
+          } else if (step.order === 0) {
+            // Special handling for Entry (order 0) label based on current screen
             if (isEntryScreen) {
               // Entry screen: Entry label → ExtraBold
               fontWeightClass = JOURNEY_LABEL_CLASS_ACTIVE;
@@ -2063,6 +2071,9 @@ export default function FindMyWhyApp() {
               </button>
             </div>
           </FmyCard>
+          {currentStep === 0 && (
+            <p className="text-[10px] font-manrope font-light text-gray-600 text-right mt-2">v70_0a</p>
+          )}
         </div>
       </div>
     );
@@ -2250,7 +2261,7 @@ export default function FindMyWhyApp() {
               </div>
               
               <div className="flex items-center justify-center gap-4 pt-2">
-                <button onClick={handleBack} className="min-w-[220px] px-6 py-3 bg-white hover:bg-slate-200 text-[#4d4d4d] font-manrope font-extrabold rounded-lg border border-[#facebb] inline-flex items-center justify-center gap-2 text-center">
+                <button onClick={handleBack} className="min-w-[220px] px-[15px] py-3 bg-white hover:bg-slate-200 text-[#4d4d4d] font-manrope font-extrabold rounded-lg border-2 border-[#facebb] inline-flex items-center justify-center gap-2 text-center">
                   <ArrowLeft size={16} /> Go Back
                 </button>
                 <button onClick={handleDM2Continue} className="min-w-[220px] px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-manrope font-extrabold rounded-lg inline-flex items-center justify-center gap-2 text-center">
@@ -2259,7 +2270,6 @@ export default function FindMyWhyApp() {
               </div>
             </div>
           </FmyCard>
-          <p className="text-[10px] font-manrope font-light text-gray-600 text-right mt-2">v70_0a</p>
         </div>
       </div>
     );
@@ -2390,7 +2400,6 @@ export default function FindMyWhyApp() {
               </div>
             </div>
           </FmyCard>
-          <p className="text-[10px] font-manrope font-light text-gray-600 text-right mt-2">v70_0a</p>
         </div>
       </div>
     );
@@ -2421,12 +2430,14 @@ export default function FindMyWhyApp() {
             <div className="space-y-6 mt-5">
               <div>
                 <h2 className="fmy-h2 text-4xl mb-2">Why does this matter?</h2>
-                <p className="text-lg font-manrope font-light italic text-[#4d4d4d]">Explore layers of "why" at your pace.</p>
               </div>
               
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-                <CheckCircle size={18} className="text-green-600" />
-                <p className="text-sm font-manrope font-light text-green-800">WHY-Chain complete · {whyChain.length} steps captured</p>
+              <div className="bg-yellow-200/25 border border-slate-200 rounded-lg p-4 flex items-center gap-3">
+                <CheckCircle size={18} className="text-[#5ba7c1]" />
+                <p className="text-sm font-manrope text-[#4d4d4d]">
+                  <span className="font-bold">Why-Chain complete</span>
+                  <span className="font-light"> | {whyChain.length} steps captured</span>
+                </p>
               </div>
               
               {patterns.length > 0 ? (
@@ -2446,21 +2457,22 @@ export default function FindMyWhyApp() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                <div className="bg-[#fff2e6] border border-slate-200 rounded-lg p-4">
                   <p className="text-sm font-manrope font-light text-slate-600">No strong patterns detected. That's okay.</p>
                 </div>
               )}
               
               <div className="flex justify-center gap-3 pt-2">
                 {!refineUsed && (
-                  <button onClick={handleRefineWhys} className="px-5 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-manrope font-extrabold rounded-lg">
-                    Refine WHYs
+                  <button onClick={handleRefineWhys} className="w-[155px] px-[15px] py-3 bg-white hover:bg-slate-200 text-[#4d4d4d] font-manrope font-extrabold rounded-lg border-2 border-[#facebb] inline-flex items-center justify-center gap-2 whitespace-nowrap">
+                    <ArrowRight size={18} style={{ transform: 'scaleX(-1)' }} />
+                    Refine Why's
                   </button>
                 )}
                 <button 
                   onClick={handleDM4Continue} 
                   disabled={dm5Status === 'loading'}
-                  className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-manrope font-extrabold rounded-lg flex items-center gap-2 transition-colors ${
+                  className={`w-[155px] px-[15px] py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-manrope font-extrabold rounded-lg inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors ${
                     dm5Status === 'loading' ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                 >
@@ -2493,7 +2505,6 @@ export default function FindMyWhyApp() {
               </div>
             </div>
           </FmyCard>
-          <p className="text-[10px] font-manrope font-light text-gray-600 text-right mt-2">v70_0a</p>
         </div>
       </div>
     );
@@ -2552,7 +2563,7 @@ export default function FindMyWhyApp() {
               )}
               
               <div className="flex justify-center gap-3 pt-2">
-                <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-gray-50 text-[#4d4d4d] font-manrope font-extrabold rounded-lg border border-gray-300 flex items-center gap-2">
+                <button onClick={handleBack} className="px-5 py-2.5 bg-white hover:bg-slate-200 text-[#4d4d4d] font-manrope font-extrabold rounded-lg border-2 border-[#facebb] flex items-center gap-2">
                   <ArrowLeft size={16} /> Back
                 </button>
                 <button 
